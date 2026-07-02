@@ -12,6 +12,7 @@
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .ts --reporter=lcov npm test",
     "test": "mocha 'test/**/*.coffee'",
     "lint": "tsc --noEmit"
+
   },
   "repository": {
     "type": "git",
@@ -52,13 +53,16 @@
     "@types/node": "^26.1.0",
     "chai": "4.3.6",
     "chai-as-promised": "7.1.1",
-    "coffeelint": "2.1.0",
     "coffeescript": "2.7.0",
-    "mocha": "9.2.2",
+    "mocha": "11.7.6",
     "nock": "13.2.8",
     "nyc": "18.0.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.0"
+  },
+  "overrides": {
+    "js-yaml": "4.3.0",
+    "serialize-javascript": "7.0.7"
   },
   "config": {
     "commitizen": {
