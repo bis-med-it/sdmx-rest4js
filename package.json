@@ -55,7 +55,7 @@
     "coffeescript": "2.7.0",
     "mocha": "9.2.2",
     "nock": "13.2.8",
-    "nyc": "15.1.0"
+    "nyc": "18.0.0"
   },
   "config": {
     "commitizen": {
