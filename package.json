@@ -57,7 +57,8 @@
     "nyc": "18.0.0"
   },
   "overrides": {
-    "js-yaml": "4.3.0"
+    "js-yaml": "4.3.0",
+    "serialize-javascript": "7.0.7"
   },
   "config": {
     "commitizen": {
