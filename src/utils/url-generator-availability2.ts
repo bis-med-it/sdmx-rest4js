@@ -1,62 +1,84 @@
-{ApiNumber, ApiVersion, getKeyFromVersion} = require '../utils/api-version'
-{createEntryPoint, validateDataForV2, parseContext, parseFilter} =
-  require '../utils/url-generator-common'
+import { ApiNumber, getKeyFromVersion } from '../utils/api-version';
+import {
+  createEntryPoint,
+  validateDataForV2,
+  parseContext,
+  parseFilter,
+} from '../utils/url-generator-common';
 
-handlePathParams = (q) ->
-  p = []
-  c = parseContext q.context
-  p.push q.component unless q.component is '*'
-  p.push q.key if q.key isnt '*' or p.length
-  p.push c[3] if c[3] isnt '*' or p.length
-  p.push c[2] if c[2] isnt '*' or p.length
-  p.push c[1] if c[1] isnt '*' or p.length
-  p.push c[0] if c[0] isnt '*' or p.length
-  if p.length then '/' + p.reverse().join('/') else ''
+const handlePathParams = (q: any): string => {
+  const p = [];
+  const c = parseContext(q.context);
+  if (q.component !== '*') p.push(q.component);
+  if (q.key !== '*' || p.length) p.push(q.key);
+  if (c[3] !== '*' || p.length) p.push(c[3]);
+  if (c[2] !== '*' || p.length) p.push(c[2]);
+  if (c[1] !== '*' || p.length) p.push(c[1]);
+  if (c[0] !== '*' || p.length) p.push(c[0]);
+  return p.length ? '/' + p.reverse().join('/') : '';
+};
 
-handleQueryParams = (q) ->
-  p = []
-  if q.filters
-    for filter in q.filters
-      f = parseFilter filter
-      p.push "c[#{f[0]}]=#{f[1]}"
-  p.push "updatedAfter=#{q.updatedAfter}" if q.updatedAfter
-  p.push "mode=#{q.mode}" unless q.mode is 'exact'
-  p.push "references=#{q.references}" unless q.references is 'none'
-  if p.length > 0 then '?' + p.reduceRight (x, y) -> x + '&' + y else ''
-  
-createShortAvailabilityQuery = (q, s, api_number) ->
-  validateDataForV2 q, s
-  u = createEntryPoint s
-  u += "availability"
-  p = handlePathParams(q)
-  u += p
-  u += handleQueryParams(q)
-  u
+const handleQueryParams = (q: any): string => {
+  const p = [];
+  if (q.filters) {
+    for (const filter of q.filters) {
+      const f = parseFilter(filter);
+      p.push(`c[${f[0]}]=${f[1]}`);
+    }
+  }
+  if (q.updatedAfter) p.push(`updatedAfter=${q.updatedAfter}`);
+  if (q.mode !== 'exact') p.push(`mode=${q.mode}`);
+  if (q.references !== 'none') p.push(`references=${q.references}`);
+  return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
+};
 
-createAvailabilityQuery = (q, s, api_number) ->
-  validateDataForV2 q, s
-  url = createEntryPoint s
-  fc = parseContext q.context
-  url += "availability/#{fc[0]}/#{fc[1]}/#{fc[2]}/#{fc[3]}/"
-  url += "#{q.key}/"
-  url += "#{q.component}?"
-  if q.filters
-    for filter in q.filters
-      f = parseFilter filter
-      url += "c[#{f[0]}]=#{f[1]}&"
-  url += "mode=#{q.mode}&references=#{q.references}"
-  url += "&updatedAfter=#{q.updatedAfter}" if q.updatedAfter
-  url
+const createShortAvailabilityQuery = (
+  q: any,
+  s: any,
+  api_number: number
+): string => {
+  validateDataForV2(q, s);
+  let u = createEntryPoint(s);
+  u += 'availability';
+  u += handlePathParams(q);
+  u += handleQueryParams(q);
+  return u;
+};
 
-handler = class Handler
+const createAvailabilityQuery = (
+  q: any,
+  s: any,
+  api_number: number
+): string => {
+  validateDataForV2(q, s);
+  let url = createEntryPoint(s);
+  const fc = parseContext(q.context);
+  url += `availability/${fc[0]}/${fc[1]}/${fc[2]}/${fc[3]}/`;
+  url += `${q.key}/`;
+  url += `${q.component}?`;
+  if (q.filters) {
+    for (const filter of q.filters) {
+      const f = parseFilter(filter);
+      url += `c[${f[0]}]=${f[1]}&`;
+    }
+  }
+  url += `mode=${q.mode}&references=${q.references}`;
+  if (q.updatedAfter) url += `&updatedAfter=${q.updatedAfter}`;
+  return url;
+};
 
-  handle: (q, s, skip) ->
-    api = ApiNumber[getKeyFromVersion(s.api)]
-    if api < ApiNumber.v2_0_0
-      throw Error "SDMX 3.0 queries not allowed in #{s.api}"
-    else if skip
-      createShortAvailabilityQuery(q, s, api)
-    else
-      createAvailabilityQuery(q, s, api)
+class Handler {
 
-exports.AvailabilityQuery2Handler = handler
+  handle(q: any, s: any, skip?: boolean): string {
+    const api = ApiNumber[getKeyFromVersion(s.api)];
+    if (api < ApiNumber.v2_0_0) {
+      throw Error(`SDMX 3.0 queries not allowed in ${s.api}`);
+    } else if (skip) {
+      return createShortAvailabilityQuery(q, s, api);
+    } else {
+      return createAvailabilityQuery(q, s, api);
+    }
+  }
+}
+
+export { Handler as AvailabilityQuery2Handler };

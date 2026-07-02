@@ -1,227 +1,167 @@
-NCNameIDType = ///
-  [A-Za-z]                     # Must begin with a letter
-  [A-Za-z0-9_-]*               # May be followed by letters, numbers, _ or -
-  ///
+// The patterns defined by the SDMX RESTful API. Base patterns are composed
+// into the anchored variants exported at the bottom of this file.
 
-NCNameIDTypeAlone = /// ^
-  #{NCNameIDType.source}
-  $ ///
+// Must begin with a letter, may be followed by letters, numbers, _ or -
+const NCNameIDType = /[A-Za-z][A-Za-z0-9_-]*/;
 
-NestedNCNameIDType = ///
-  #{NCNameIDType.source}      # An ID
-  (
-    \.                        # May be followed by a dot and other IDs
-    #{NCNameIDType.source}
-  )*
-  ///
+const NCNameIDTypeAlone = new RegExp(`^${NCNameIDType.source}$`);
 
-NestedNCNameIDTypeAlone = /// ^
-  #{NestedNCNameIDType.source}
-  $ ///
+// An ID, potentially followed by a dot and other IDs
+const NestedNCNameIDType = new RegExp(
+  `${NCNameIDType.source}(\\.${NCNameIDType.source})*`
+);
 
-IDType = ///
-  [A-Za-z0-9_@$-]+    # Letters, numbers, _, @, $ or -
-  ///
+const NestedNCNameIDTypeAlone = new RegExp(
+  `^${NestedNCNameIDType.source}$`
+);
 
-IDTypeAlone = /// ^
-  #{IDType.source}
-  $ ///
+// Letters, numbers, _, @, $ or -
+const IDType = /[A-Za-z0-9_@$-]+/;
 
-VersionNumber = ///
-  [0-9]+(\.[0-9]+)*   # A version number (e.g. 1.0)
-  ///
+const IDTypeAlone = new RegExp(`^${IDType.source}$`);
 
-SemVer = ///
-  \+                           # Latest stable
-  |~                           # Latest (un)stable
-  |(0|[1-9]\d*[\+~]?|[\+~]?)   # Major part
-  \.(0|[1-9]\d*[\+~]?|[\+~]?)  # Minor part
-  \.?(0|[1-9]\d*[\+~]?|[\+~]?) # Patch part
-  (?:-((?:0|[1-9]\d*
-  |\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*
-  |\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?
-  (?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
-  ///
+// A version number (e.g. 1.0)
+const VersionNumber = /[0-9]+(\.[0-9]+)*/;
 
-VersionType = ///
-  (                           # Starts the OR clause
-  all                         # The string all
-  | latest                    # Or the string latest
-  | #{VersionNumber.source}   # Or a version number
-  | #{SemVer.source}          # Or semver
-  )                           # Ends the OR clause
-  ///
+// Latest stable (+), latest (un)stable (~), or a major.minor.patch version,
+// potentially followed by a pre-release and a build part
+const SemVer = new RegExp(
+  '\\+' +
+  '|~' +
+  '|(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
+  '\\.(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
+  '\\.?(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
+  '(?:-((?:0|[1-9]\\d*' +
+  '|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*' +
+  '|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?' +
+  '(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?'
+);
 
-SingleVersionType = ///
-  (                           # Starts the OR clause
-  latest                      # the string latest
-  | #{VersionNumber.source}   # Or a version number
-  | #{SemVer.source}          # Or semver
-  )                           # Ends the OR clause
-  ///
+// The string all, the string latest, a version number or semver
+const VersionType = new RegExp(
+  `(all|latest|${VersionNumber.source}|${SemVer.source})`
+);
 
-SingleVersionTypeAlone = /// ^
-  #{SingleVersionType.source}
-  $ ///
+// The string latest, a version number or semver
+const SingleVersionType = new RegExp(
+  `(latest|${VersionNumber.source}|${SemVer.source})`
+);
 
-VersionNumberAlone = /// ^
-  #{VersionNumber.source}
-  $ ///
+const SingleVersionTypeAlone = new RegExp(`^${SingleVersionType.source}$`);
 
-VersionTypeAlone = /// ^
-  #{VersionType.source}
-  $ ///
+const VersionNumberAlone = new RegExp(`^${VersionNumber.source}$`);
 
-NestedIDType = ///
-  [A-Za-z0-9_@$-]+       # Letters, numbers, _, @, $ or -
-  (\.[A-Za-z0-9_@$-]+)*  # Potentially hierarchical (e.g. A.B.C)
-  ///
+const VersionTypeAlone = new RegExp(`^${VersionType.source}$`);
 
-NestedIDTypeAlone = /// ^
-  #{NestedIDType.source}
-  $ ///
+// Letters, numbers, _, @, $ or -, potentially hierarchical (e.g. A.B.C)
+const NestedIDType = /[A-Za-z0-9_@$-]+(\.[A-Za-z0-9_@$-]+)*/;
 
-SeriesKeyType = /// ^
-  (#{IDType.source}([+]#{IDType.source})*)? # One or more dimension values
-                                            # separated by a +
-  (
-    [.]                                        # Potentially followed by a dot
-    (#{IDType.source}([+]#{IDType.source})*)?  # and repeating above pattern
-  )*
-  $ ///
+const NestedIDTypeAlone = new RegExp(`^${NestedIDType.source}$`);
 
-Sdmx3SeriesKeyType = /// ^
-  (\* | #{IDType.source})?    # One star or a dimension value
-  (
-    [.]                       # Potentially followed by a dot
-    (\* | #{IDType.source})?  # and repeating above pattern
-  )*
-$ ///
+// One or more dimension values separated by a +, potentially followed by a
+// dot and repeating the same pattern
+const SeriesKeyType = new RegExp(
+  `^(${IDType.source}([+]${IDType.source})*)?` +
+  `([.](${IDType.source}([+]${IDType.source})*)?)*$`
+);
 
-FlowRefType = /// ^
-  (
-  #{IDType.source}
-  | (
-    #{NestedNCNameIDType.source}
-    ,#{IDType.source}
-    (,(latest | (#{VersionNumber.source})))?
-    )
-  )
-  $ ///
+// One star or a dimension value, potentially followed by a dot and repeating
+// the same pattern
+const Sdmx3SeriesKeyType = new RegExp(
+  `^(\\*|${IDType.source})?([.](\\*|${IDType.source})?)*$`
+);
 
-ProviderRefType = ///
-  (#{NestedNCNameIDType.source},)? # May start with the agency owning the scheme
-  #{IDType.source}                 # The id of the provider
-  ///
+const FlowRefType = new RegExp(
+  `^(${IDType.source}` +
+  `|(${NestedNCNameIDType.source}` +
+  `,${IDType.source}` +
+  `(,(latest|(${VersionNumber.source})))?))$`
+);
 
-MultipleProviderRefType = /// ^
-  (#{ProviderRefType.source}([+]#{ProviderRefType.source})*)
-  $///
+// May start with the agency owning the scheme, followed by the id of the
+// provider
+const ProviderRefType = new RegExp(
+  `(${NestedNCNameIDType.source},)?${IDType.source}`
+);
 
-Sdmx_3_0_all = ///\*///
+const MultipleProviderRefType = new RegExp(
+  `^(${ProviderRefType.source}([+]${ProviderRefType.source})*)$`
+);
 
-MultipleAgencies = ///
-  (
-  #{Sdmx_3_0_all.source}
-  | #{NestedNCNameIDType.source}([+,]#{NestedNCNameIDType.source})*
-  )
-  ///
+const Sdmx_3_0_all = /\*/;
 
-MultipleAgenciesRefType = /// ^
-  #{MultipleAgencies.source}
-  $///
+const MultipleAgencies = new RegExp(
+  `(${Sdmx_3_0_all.source}` +
+  `|${NestedNCNameIDType.source}([+,]${NestedNCNameIDType.source})*)`
+);
 
-MultipleIDs = ///
-  (
-  #{Sdmx_3_0_all.source}
-  | #{IDType.source}([+,]#{IDType.source})*
-  )
-  ///
+const MultipleAgenciesRefType = new RegExp(`^${MultipleAgencies.source}$`);
 
-MultipleIDType = /// ^
-  #{MultipleIDs.source}
-  $///
+const MultipleIDs = new RegExp(
+  `(${Sdmx_3_0_all.source}|${IDType.source}([+,]${IDType.source})*)`
+);
 
-MultipleNestedIDType = /// ^
-  (
-  #{Sdmx_3_0_all.source}
-  | #{NestedIDType.source}([+]#{NestedIDType.source})*
-  )
-  $///
+const MultipleIDType = new RegExp(`^${MultipleIDs.source}$`);
 
-MultipleVersions = ///
-  (
-    #{Sdmx_3_0_all.source}
-    | #{VersionType.source}([,]#{VersionType.source})*
-  )
-  ///
+const MultipleNestedIDType = new RegExp(
+  `^(${Sdmx_3_0_all.source}` +
+  `|${NestedIDType.source}([+]${NestedIDType.source})*)$`
+);
 
-MultipleVersionsType = /// ^
-  #{VersionType.source}([+,]#{VersionType.source})*
-  $///
+const MultipleVersions = new RegExp(
+  `(${Sdmx_3_0_all.source}` +
+  `|${VersionType.source}([,]${VersionType.source})*)`
+);
 
-ReportingPeriodType = /// ^
-  \d{4}-([ASTQ]\d{1}|[MW]\d{2}|[D]\d{3})
-  $ ///
+const MultipleVersionsType = new RegExp(
+  `^${VersionType.source}([+,]${VersionType.source})*$`
+);
 
-ContextType = ///
-  (datastructure|dataflow|provisionagreement)
-  ///
+const ReportingPeriodType = /^\d{4}-([ASTQ]\d{1}|[MW]\d{2}|[D]\d{3})$/;
 
-MultipleContextType = ///
-  (
-    #{Sdmx_3_0_all.source}
-    | #{ContextType.source}([+,]#{ContextType.source})*
-  )
-  ///
+const ContextType = /(datastructure|dataflow|provisionagreement)/;
 
-ContextRefType = /// ^
-  (
-    #{MultipleContextType.source} # The context
-    =                             # Then the separator between context & agency
-    #{MultipleAgencies.source}    # Then one or more agencies
-    :                             # Then the separator between agency & id
-    #{MultipleIDs.source}         # Then one or more artefact IDs
-    \(                            # Then an open parenthesis
-    #{MultipleVersions.source}    # Then one or more versions
-    \)                            # Then a closing parenthesis
-  )
-  $ ///
+const MultipleContextType = new RegExp(
+  `(${Sdmx_3_0_all.source}|${ContextType.source}([+,]${ContextType.source})*)`
+);
 
-Operators = ///
-  (eq|ne|lt|le|gt|ge|co|nc|sw|ew)
-  ///
+// The context, then the separator between context & agency, then one or more
+// agencies, then the separator between agency & id, then one or more artefact
+// IDs, then one or more versions between parentheses
+const ContextRefType = new RegExp(
+  `^(${MultipleContextType.source}` +
+  `=${MultipleAgencies.source}` +
+  `:${MultipleIDs.source}` +
+  `\\(${MultipleVersions.source}\\))$`
+);
 
-FilterValue = ///
-  (
-    (#{Operators.source}:)?#{IDType.source}
-  )
-  ///
+const Operators = /(eq|ne|lt|le|gt|ge|co|nc|sw|ew)/;
 
-FiltersType = /// ^
-  (
-    #{NCNameIDType.source}
-    =
-    #{FilterValue.source}([+,]#{FilterValue.source})*
-  )
-  $ ///
+const FilterValue = new RegExp(`((${Operators.source}:)?${IDType.source})`);
 
-exports.NCNameIDType = NCNameIDTypeAlone
-exports.NestedNCNameIDType = NestedNCNameIDTypeAlone
-exports.IDType = IDTypeAlone
-exports.VersionType = VersionTypeAlone
-exports.SingleVersionType = SingleVersionTypeAlone
-exports.VersionNumber = VersionNumberAlone
-exports.NestedIDType = NestedIDTypeAlone
-exports.FlowRefType = FlowRefType
-exports.ProviderRefType = ProviderRefType
-exports.MultipleProviderRefType = MultipleProviderRefType
-exports.AgenciesRefType = MultipleAgenciesRefType
-exports.ReportingPeriodType = ReportingPeriodType
-exports.SeriesKeyType = SeriesKeyType
-exports.Sdmx3SeriesKeyType = Sdmx3SeriesKeyType
-exports.MultipleIDType = MultipleIDType
-exports.MultipleVersionsType = MultipleVersionsType
-exports.MultipleNestedIDType = MultipleNestedIDType
-exports.ContextRefType = ContextRefType
-exports.FiltersType = FiltersType
+const FiltersType = new RegExp(
+  `^(${NCNameIDType.source}` +
+  `=${FilterValue.source}([+,]${FilterValue.source})*)$`
+);
+
+export {
+  NCNameIDTypeAlone as NCNameIDType,
+  NestedNCNameIDTypeAlone as NestedNCNameIDType,
+  IDTypeAlone as IDType,
+  VersionTypeAlone as VersionType,
+  SingleVersionTypeAlone as SingleVersionType,
+  VersionNumberAlone as VersionNumber,
+  NestedIDTypeAlone as NestedIDType,
+  FlowRefType,
+  ProviderRefType,
+  MultipleProviderRefType,
+  MultipleAgenciesRefType as AgenciesRefType,
+  ReportingPeriodType,
+  SeriesKeyType,
+  Sdmx3SeriesKeyType,
+  MultipleIDType,
+  MultipleVersionsType,
+  MultipleNestedIDType,
+  ContextRefType,
+  FiltersType,
+};

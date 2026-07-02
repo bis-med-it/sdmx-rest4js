@@ -1,30 +1,47 @@
-{ApiVersion} = require '../utils/api-version'
-{AvailabilityQueryHandler} = require '../utils/url-generator-availability'
-{AvailabilityQuery2Handler} = require '../utils/url-generator-availability2'
-{SchemaQueryHandler} = require '../utils/url-generator-schema'
-{DataQueryHandler} = require '../utils/url-generator-data'
-{DataQuery2Handler} = require '../utils/url-generator-data2'
-{MetadataQueryHandler} = require '../utils/url-generator-metadata'
+import { AvailabilityQueryHandler } from '../utils/url-generator-availability';
+import { AvailabilityQuery2Handler } from
+  '../utils/url-generator-availability2';
+import { SchemaQueryHandler } from '../utils/url-generator-schema';
+import { DataQueryHandler } from '../utils/url-generator-data';
+import { DataQuery2Handler } from '../utils/url-generator-data2';
+import { MetadataQueryHandler } from '../utils/url-generator-metadata';
 
-generator = class Generator
+class Generator {
 
-  getUrl: (@query, @service, skipDefaults) ->
-    throw ReferenceError "A valid query must be supplied" unless @query
-    throw ReferenceError "#{@service} is not a valid service"\
-      unless @service and @service.url
-    if @query.context? and @query.attributes?
-      new DataQuery2Handler().handle(@query, @service, skipDefaults)
-    else if @query.context? and @query.mode?
-      new AvailabilityQuery2Handler().handle(@query, @service, skipDefaults)
-    else if @query.mode?
-      new AvailabilityQueryHandler().handle(@query, @service, skipDefaults)
-    else if @query.flow?
-      new DataQueryHandler().handle(@query, @service, skipDefaults)
-    else if @query.resource?
-      new MetadataQueryHandler().handle(@query, @service, skipDefaults)
-    else if @query.context?
-      new SchemaQueryHandler().handle(@query, @service, skipDefaults)
-    else
-      throw TypeError "#{@query} is not a valid query"
+  query: any;
+  service: any;
 
-exports.UrlGenerator = generator
+  getUrl(query: any, service: any, skipDefaults?: boolean): string {
+    this.query = query;
+    this.service = service;
+    if (!this.query) {
+      throw ReferenceError('A valid query must be supplied');
+    }
+    if (!(this.service && this.service.url)) {
+      throw ReferenceError(`${this.service} is not a valid service`);
+    }
+    if (this.query.context != null && this.query.attributes != null) {
+      return new DataQuery2Handler()
+        .handle(this.query, this.service, skipDefaults);
+    } else if (this.query.context != null && this.query.mode != null) {
+      return new AvailabilityQuery2Handler()
+        .handle(this.query, this.service, skipDefaults);
+    } else if (this.query.mode != null) {
+      return new AvailabilityQueryHandler()
+        .handle(this.query, this.service, skipDefaults);
+    } else if (this.query.flow != null) {
+      return new DataQueryHandler()
+        .handle(this.query, this.service, skipDefaults);
+    } else if (this.query.resource != null) {
+      return new MetadataQueryHandler()
+        .handle(this.query, this.service, skipDefaults);
+    } else if (this.query.context != null) {
+      return new SchemaQueryHandler()
+        .handle(this.query, this.service, skipDefaults);
+    } else {
+      throw TypeError(`${this.query} is not a valid query`);
+    }
+  }
+}
+
+export { Generator as UrlGenerator };

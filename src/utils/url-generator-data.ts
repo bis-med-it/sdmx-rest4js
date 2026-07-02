@@ -1,123 +1,148 @@
-{ApiNumber, ApiVersion, getKeyFromVersion} = require '../utils/api-version'
-{createEntryPoint, validateDataForV2, parseFlow, checkMultipleItems} =
-  require '../utils/url-generator-common'
-{DataDetail} = require '../data/data-detail'
+import { ApiNumber, getKeyFromVersion } from '../utils/api-version';
+import {
+  createEntryPoint,
+  validateDataForV2,
+  parseFlow,
+  checkMultipleItems,
+} from '../utils/url-generator-common';
+import { DataDetail } from '../data/data-detail';
 
-translateDetail = (detail) ->
-  if detail == DataDetail.NO_DATA
-    "attributes=dataset,series&measures=none"
-  else if detail == DataDetail.DATA_ONLY
-    "attributes=none&measures=all"
-  else if detail == DataDetail.SERIES_KEYS_ONLY
-    "attributes=none&measures=none"
-  else
-    "attributes=dsd&measures=all"
+const translateDetail = (detail: string): string => {
+  if (detail === DataDetail.NO_DATA) {
+    return 'attributes=dataset,series&measures=none';
+  } else if (detail === DataDetail.DATA_ONLY) {
+    return 'attributes=none&measures=all';
+  } else if (detail === DataDetail.SERIES_KEYS_ONLY) {
+    return 'attributes=none&measures=none';
+  } else {
+    return 'attributes=dsd&measures=all';
+  }
+};
 
-createV1DataUrl = (q, s, a) ->
-  url = createEntryPoint s
-  url += "data/#{q.flow}/#{q.key}/#{q.provider}?"
-  if q.obsDimension
-    url += "dimensionAtObservation=#{q.obsDimension}&"
-  url += "detail=#{q.detail}"
-  if a >= ApiNumber.v1_1_0
-    url += "&includeHistory=#{q.history}"
-  url += "&startPeriod=#{q.start}" if q.start
-  url += "&endPeriod=#{q.end}" if q.end
-  url += "&updatedAfter=#{q.updatedAfter}" if q.updatedAfter
-  url += "&firstNObservations=#{q.firstNObs}" if q.firstNObs
-  url += "&lastNObservations=#{q.lastNObs}" if q.lastNObs
-  url
+const createV1DataUrl = (q: any, s: any, a: number): string => {
+  let url = createEntryPoint(s);
+  url += `data/${q.flow}/${q.key}/${q.provider}?`;
+  if (q.obsDimension) {
+    url += `dimensionAtObservation=${q.obsDimension}&`;
+  }
+  url += `detail=${q.detail}`;
+  if (a >= ApiNumber.v1_1_0) {
+    url += `&includeHistory=${q.history}`;
+  }
+  if (q.start) url += `&startPeriod=${q.start}`;
+  if (q.end) url += `&endPeriod=${q.end}`;
+  if (q.updatedAfter) url += `&updatedAfter=${q.updatedAfter}`;
+  if (q.firstNObs) url += `&firstNObservations=${q.firstNObs}`;
+  if (q.lastNObs) url += `&lastNObservations=${q.lastNObs}`;
+  return url;
+};
 
-createV2DataUrl = (q, s) ->
-  validateDataForV2 q, s
-  url = createEntryPoint s
-  fc = parseFlow q.flow
-  url += "data/dataflow/#{fc[0]}/#{fc[1]}/#{fc[2]}/"
-  url += if q.key == "all" then "*?" else "#{q.key}?"
-  if q.obsDimension
-    url += "dimensionAtObservation=#{q.obsDimension}&"
-  url += translateDetail q.detail
-  url += "&includeHistory=#{q.history}"
-  url += "&updatedAfter=#{q.updatedAfter}" if q.updatedAfter
-  url += "&firstNObservations=#{q.firstNObs}" if q.firstNObs
-  url += "&lastNObservations=#{q.lastNObs}" if q.lastNObs
-  url
+const createV2DataUrl = (q: any, s: any): string => {
+  validateDataForV2(q, s);
+  let url = createEntryPoint(s);
+  const fc = parseFlow(q.flow);
+  url += `data/dataflow/${fc[0]}/${fc[1]}/${fc[2]}/`;
+  url += q.key === 'all' ? '*?' : `${q.key}?`;
+  if (q.obsDimension) {
+    url += `dimensionAtObservation=${q.obsDimension}&`;
+  }
+  url += translateDetail(q.detail);
+  url += `&includeHistory=${q.history}`;
+  if (q.updatedAfter) url += `&updatedAfter=${q.updatedAfter}`;
+  if (q.firstNObs) url += `&firstNObservations=${q.firstNObs}`;
+  if (q.lastNObs) url += `&lastNObservations=${q.lastNObs}`;
+  return url;
+};
 
-createDataQuery = (q, s, a) ->
-  if a < ApiNumber.v2_0_0
-    createV1DataUrl q, s, a
-  else
-    createV2DataUrl q, s
+const createDataQuery = (q: any, s: any, a: number): string => {
+  if (a < ApiNumber.v2_0_0) {
+    return createV1DataUrl(q, s, a);
+  } else {
+    return createV2DataUrl(q, s);
+  }
+};
 
-handleDataPathParams = (q) ->
-  path = []
-  path.push q.provider unless q.provider is 'all'
-  path.push q.key if q.key isnt 'all' or path.length
-  if path.length then '/' + path.reverse().join('/') else ''
+const handleDataPathParams = (q: any): string => {
+  const path = [];
+  if (q.provider !== 'all') path.push(q.provider);
+  if (q.key !== 'all' || path.length) path.push(q.key);
+  return path.length ? '/' + path.reverse().join('/') : '';
+};
 
-handleData2PathParams = (q) ->
-  path = []
-  path.push q.key if q.key isnt 'all' or path.length
-  if path.length then '/' + path.reverse().join('/') else ''
+const handleData2PathParams = (q: any): string => {
+  const path = [];
+  if (q.key !== 'all' || path.length) path.push(q.key);
+  return path.length ? '/' + path.reverse().join('/') : '';
+};
 
-hasHistory = (q, s, a) ->
-  if (a >= ApiNumber.v1_1_0 and q.history) then true else false
+const hasHistory = (q: any, s: any, a: number): boolean =>
+  a >= ApiNumber.v1_1_0 && q.history ? true : false;
 
-handleDataQueryParams = (q, s, a) ->
-  p = []
-  p.push "dimensionAtObservation=#{q.obsDimension}" if q.obsDimension
-  p.push "detail=#{q.detail}" unless q.detail is 'full'
-  p.push "includeHistory=#{q.history}" if hasHistory(q, s, a)
-  p.push "startPeriod=#{q.start}" if q.start
-  p.push "endPeriod=#{q.end}" if q.end
-  p.push "updatedAfter=#{q.updatedAfter}" if q.updatedAfter
-  p.push "firstNObservations=#{q.firstNObs}" if q.firstNObs
-  p.push "lastNObservations=#{q.lastNObs}" if q.lastNObs
-  if p.length > 0 then '?' + p.reduceRight (x, y) -> x + '&' + y else ''
+const handleDataQueryParams = (q: any, s: any, a: number): string => {
+  const p = [];
+  if (q.obsDimension) p.push(`dimensionAtObservation=${q.obsDimension}`);
+  if (q.detail !== 'full') p.push(`detail=${q.detail}`);
+  if (hasHistory(q, s, a)) p.push(`includeHistory=${q.history}`);
+  if (q.start) p.push(`startPeriod=${q.start}`);
+  if (q.end) p.push(`endPeriod=${q.end}`);
+  if (q.updatedAfter) p.push(`updatedAfter=${q.updatedAfter}`);
+  if (q.firstNObs) p.push(`firstNObservations=${q.firstNObs}`);
+  if (q.lastNObs) p.push(`lastNObservations=${q.lastNObs}`);
+  return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
+};
 
-handleData2QueryParams = (q, s, a) ->
-  p = []
-  p.push "dimensionAtObservation=#{q.obsDimension}" if q.obsDimension
-  p.push "#{translateDetail q.detail}" unless q.detail is 'full'
-  p.push "includeHistory=#{q.history}" if hasHistory(q, s, a)
-  p.push "updatedAfter=#{q.updatedAfter}" if q.updatedAfter
-  p.push "firstNObservations=#{q.firstNObs}" if q.firstNObs
-  p.push "lastNObservations=#{q.lastNObs}" if q.lastNObs
-  if p.length > 0 then '?' + p.reduceRight (x, y) -> x + '&' + y else ''
+const handleData2QueryParams = (q: any, s: any, a: number): string => {
+  const p = [];
+  if (q.obsDimension) p.push(`dimensionAtObservation=${q.obsDimension}`);
+  if (q.detail !== 'full') p.push(`${translateDetail(q.detail)}`);
+  if (hasHistory(q, s, a)) p.push(`includeHistory=${q.history}`);
+  if (q.updatedAfter) p.push(`updatedAfter=${q.updatedAfter}`);
+  if (q.firstNObs) p.push(`firstNObservations=${q.firstNObs}`);
+  if (q.lastNObs) p.push(`lastNObservations=${q.lastNObs}`);
+  return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
+};
 
-createShortV1Url = (q, s, a) ->
-  u = createEntryPoint s
-  u += "data/#{q.flow}"
-  u += handleDataPathParams(q)
-  u += handleDataQueryParams(q, s, a)
-  u
+const createShortV1Url = (q: any, s: any, a: number): string => {
+  let u = createEntryPoint(s);
+  u += `data/${q.flow}`;
+  u += handleDataPathParams(q);
+  u += handleDataQueryParams(q, s, a);
+  return u;
+};
 
-createShortV2Url = (q, s, a) ->
-  validateDataForV2 q, s
-  u = createEntryPoint s
-  fc = parseFlow q.flow
-  u += "data/dataflow/#{fc[0]}/#{fc[1]}"
-  pp = handleData2PathParams(q)
-  if fc[2] isnt "*" or pp isnt ''
-    u += "/#{fc[2]}"
-  u += pp
-  u += handleData2QueryParams(q, s, a)
-  u
- 
-createShortDataQuery = (q, s, a) ->
-  if a < ApiNumber.v2_0_0
-    createShortV1Url q, s, a
-  else
-    createShortV2Url q, s, a
+const createShortV2Url = (q: any, s: any, a: number): string => {
+  validateDataForV2(q, s);
+  let u = createEntryPoint(s);
+  const fc = parseFlow(q.flow);
+  u += `data/dataflow/${fc[0]}/${fc[1]}`;
+  const pp = handleData2PathParams(q);
+  if (fc[2] !== '*' || pp !== '') {
+    u += `/${fc[2]}`;
+  }
+  u += pp;
+  u += handleData2QueryParams(q, s, a);
+  return u;
+};
 
-handler = class Handler
+const createShortDataQuery = (q: any, s: any, a: number): string => {
+  if (a < ApiNumber.v2_0_0) {
+    return createShortV1Url(q, s, a);
+  } else {
+    return createShortV2Url(q, s, a);
+  }
+};
 
-  handle: (q, s, skip) ->
-    api = ApiNumber[getKeyFromVersion(s.api)]
-    checkMultipleItems(q.provider, s, 'providers', api)
-    if skip
-      createShortDataQuery(q, s, api)
-    else
-      createDataQuery(q, s, api)
+class Handler {
 
-exports.DataQueryHandler = handler
+  handle(q: any, s: any, skip?: boolean): string {
+    const api = ApiNumber[getKeyFromVersion(s.api)];
+    checkMultipleItems(q.provider, s, 'providers', api);
+    if (skip) {
+      return createShortDataQuery(q, s, api);
+    } else {
+      return createDataQuery(q, s, api);
+    }
+  }
+}
+
+export { Handler as DataQueryHandler };

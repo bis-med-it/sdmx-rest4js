@@ -8,10 +8,10 @@
   "main": "./lib/index.js",
   "scripts": {
     "prebuild": "rm -rf lib && mkdir lib",
-    "build": "coffee -co lib src/",
-    "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .coffee --reporter=lcov npm test",
+    "build": "tsc",
+    "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .ts --reporter=lcov npm test",
     "test": "mocha 'test/**/*.coffee'",
-    "lint": "coffeelint src"
+    "lint": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -49,13 +49,16 @@
   },
   "homepage": "https://github.com/sosna/sdmx-rest4js#readme",
   "devDependencies": {
+    "@types/node": "^26.1.0",
     "chai": "4.3.6",
     "chai-as-promised": "7.1.1",
     "coffeelint": "2.1.0",
     "coffeescript": "2.7.0",
     "mocha": "9.2.2",
     "nock": "13.2.8",
-    "nyc": "18.0.0"
+    "nyc": "18.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.9.0"
   },
   "config": {
     "commitizen": {
@@ -65,7 +68,8 @@
   "mocha": {
     "throw-deprecation": true,
     "require": [
-      "coffeescript/register"
+      "coffeescript/register",
+      "ts-node/register"
     ],
     "inline-diffs": true,
     "timeout": 40000,

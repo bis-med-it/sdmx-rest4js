@@ -1,50 +1,69 @@
-{SchemaContext} = require './schema-context'
-{NestedNCNameIDType, IDType, SingleVersionType, NCNameIDType} =
-  require '../utils/sdmx-patterns'
-{isValidEnum, isValidPattern, createErrorMessage} =
-  require '../utils/validators'
+import { SchemaContext } from './schema-context';
+import {
+  NestedNCNameIDType,
+  IDType,
+  SingleVersionType,
+  NCNameIDType,
+} from '../utils/sdmx-patterns';
+import {
+  isValidEnum,
+  isValidPattern,
+  createErrorMessage,
+} from '../utils/validators';
 
-defaults =
-  version: 'latest'
-  explicit: false
+const defaults = {
+  version: 'latest',
+  explicit: false,
+};
 
-isValidExplicit = (input, errors) ->
-  valid = typeof input is 'boolean'
-  errors.push "#{input} is not a valid value for explicit. Must be true or \
-  false" unless valid
-  valid
+const isValidExplicit = (input: any, errors: string[]): boolean => {
+  const valid = typeof input === 'boolean';
+  if (!valid) {
+    errors.push(
+      `${input} is not a valid value for explicit. Must be true or false`
+    );
+  }
+  return valid;
+};
 
-ValidQuery =
-  context: (q, i, e) -> isValidEnum(i, SchemaContext, 'context', e)
-  agency: (q, i, e) -> isValidPattern(i, NestedNCNameIDType, 'agency', e)
-  id: (q, i, e) -> isValidPattern(i, IDType, 'resource ids', e)
-  version: (q, i, e) -> isValidPattern(i, SingleVersionType, 'versions', e)
-  explicit: (q, i, e) -> isValidExplicit(i, e)
-  obsDimension: (q, i, e) ->
-    not i or isValidPattern(i, NCNameIDType, 'obs dimension', e)
+const ValidQuery: { [key: string]: (q: any, i: any, e: string[]) => any } = {
+  context: (q, i, e) => isValidEnum(i, SchemaContext, 'context', e),
+  agency: (q, i, e) => isValidPattern(i, NestedNCNameIDType, 'agency', e),
+  id: (q, i, e) => isValidPattern(i, IDType, 'resource ids', e),
+  version: (q, i, e) => isValidPattern(i, SingleVersionType, 'versions', e),
+  explicit: (q, i, e) => isValidExplicit(i, e),
+  obsDimension: (q, i, e) =>
+    !i || isValidPattern(i, NCNameIDType, 'obs dimension', e),
+};
 
-isValidQuery = (query) ->
-  errors = []
-  isValid = false
-  for own k, v of query
-    isValid = ValidQuery[k](query, v, errors)
-    break unless isValid
-  {isValid: isValid, errors: errors}
+const isValidQuery = (query: any): { isValid: any; errors: string[] } => {
+  const errors: string[] = [];
+  let isValid: any = false;
+  for (const k of Object.keys(query)) {
+    isValid = ValidQuery[k](query, query[k], errors);
+    if (!isValid) break;
+  }
+  return { isValid, errors };
+};
 
-# A query for XML schemas, as defined by the SDMX RESTful API.
-query = class SchemaQuery
+// A query for XML schemas, as defined by the SDMX RESTful API.
+class SchemaQuery {
 
-  @from: (opts) ->
-    query =
-      context: opts?.context
-      agency: opts?.agency
-      id: opts?.id
-      version: opts?.version ? defaults.version
-      explicit: opts?.explicit ? defaults.explicit
-      obsDimension: opts?.obsDimension
-    input = isValidQuery query
-    throw Error createErrorMessage(input.errors, 'schema query') \
-      unless input.isValid
-    query
+  static from(opts: any): any {
+    const query = {
+      context: opts?.context,
+      agency: opts?.agency,
+      id: opts?.id,
+      version: opts?.version ?? defaults.version,
+      explicit: opts?.explicit ?? defaults.explicit,
+      obsDimension: opts?.obsDimension,
+    };
+    const input = isValidQuery(query);
+    if (!input.isValid) {
+      throw Error(createErrorMessage(input.errors, 'schema query'));
+    }
+    return query;
+  }
+}
 
-exports.SchemaQuery = query
+export { SchemaQuery };
