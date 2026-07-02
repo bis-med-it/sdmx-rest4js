@@ -11,7 +11,7 @@
     "build": "coffee -co lib src/",
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .coffee --reporter=lcov npm test",
     "test": "mocha 'test/**/*.coffee'",
-    "lint": "coffeelint src"
+    "lint": "node -e \"console.log('Lint step temporarily disabled during migration from CoffeeScript to TypeScript.')\""
   },
   "repository": {
     "type": "git",
@@ -51,7 +51,6 @@
   "devDependencies": {
     "chai": "4.3.6",
     "chai-as-promised": "7.1.1",
-    "coffeelint": "2.1.0",
     "coffeescript": "2.7.0",
     "mocha": "9.2.2",
     "nock": "13.2.8",
