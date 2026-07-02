@@ -8,10 +8,11 @@
   "main": "./lib/index.js",
   "scripts": {
     "prebuild": "rm -rf lib && mkdir lib",
-    "build": "coffee -co lib src/",
-    "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .coffee --reporter=lcov npm test",
+    "build": "tsc",
+    "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .ts --reporter=lcov npm test",
     "test": "mocha test/**/*.coffee",
-    "lint": "node -e \"console.log('Lint step temporarily disabled during migration from CoffeeScript to TypeScript.')\""
+    "lint": "tsc --noEmit"
+
   },
   "repository": {
     "type": "git",
@@ -49,12 +50,15 @@
   },
   "homepage": "https://github.com/sosna/sdmx-rest4js#readme",
   "devDependencies": {
+    "@types/node": "^26.1.0",
     "chai": "4.3.6",
     "chai-as-promised": "7.1.1",
     "coffeescript": "2.7.0",
     "mocha": "11.7.6",
     "nock": "13.2.8",
-    "nyc": "18.0.0"
+    "nyc": "18.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.9.0"
   },
   "overrides": {
     "js-yaml": "4.3.0",
@@ -68,7 +72,8 @@
   "mocha": {
     "throw-deprecation": true,
     "require": [
-      "coffeescript/register"
+      "coffeescript/register",
+      "ts-node/register"
     ],
     "inline-diffs": true,
     "timeout": 40000,
