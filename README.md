@@ -1,12 +1,8 @@
 # sdmx-rest4js
 
-[![Build](https://github.com/sosna/sdmx-rest4js/workflows/Build/badge.svg)](https://github.com/sosna/sdmx-rest4js/actions)
-[![codecov.io](https://codecov.io/github/sosna/sdmx-rest4js/coverage.svg?branch=master)](https://codecov.io/github/sosna/sdmx-rest4js?branch=master)
-[![CodeFactor](https://www.codefactor.io/repository/github/sosna/sdmx-rest4js/badge)](https://www.codefactor.io/repository/github/sosna/sdmx-rest4js)
-[![Known Vulnerabilities](https://snyk.io/test/github/sosna/sdmx-rest4js/badge.svg?targetFile=package.json)](https://snyk.io/test/github/sosna/sdmx-rest4js?targetFile=package.json)
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![current version](https://img.shields.io/npm/v/sdmx-rest.svg)](https://www.npmjs.com/package/sdmx-rest)
 [![Mentioned in Awesome Official Statistics ](https://awesome.re/mentioned-badge.svg)](http://www.awesomeofficialstatistics.org)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 This library allows to create and execute [SDMX REST queries](https://github.com/sdmx-twg/sdmx-rest) using JavaScript.
 
