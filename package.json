@@ -10,7 +10,7 @@
     "prebuild": "rm -rf lib && mkdir lib",
     "build": "tsc",
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .ts --reporter=lcov npm test",
-    "test": "mocha 'test/**/*.test.ts'",
+    "test": "mocha test/**/*.test.ts",
     "lint": "tsc --noEmit"
   },
   "repository": {
