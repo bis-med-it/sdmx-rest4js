@@ -6,12 +6,7 @@ const validEnum = (
   name: string,
   errors: string[],
 ): boolean => {
-  let found = false;
-  for (const v of Object.values(list)) {
-    if (v === input) {
-      found = true;
-    }
-  }
+  const found = Object.values(list).some((v) => v === input);
   if (!found) {
     errors.push(
       `${input} is not in the list of supported ${name} ` +
@@ -27,21 +22,19 @@ const validMultipleEnum = (
   name: string,
   errors: string[],
 ): boolean => {
-  let found = false;
   if (input && input.indexOf('+') > -1) {
     const output = input
       .split('+')
       .map((r: any) => validEnum(r, list, name, errors));
-    found = output.indexOf(false) === -1;
+    return output.indexOf(false) === -1;
   } else if (input && input.indexOf(',') > -1) {
     const output = input
       .split(',')
       .map((r: any) => validEnum(r, list, name, errors));
-    found = output.indexOf(false) === -1;
+    return output.indexOf(false) === -1;
   } else {
-    found = validEnum(input, list, name, errors);
+    return validEnum(input, list, name, errors);
   }
-  return found;
 };
 
 const validPattern = (

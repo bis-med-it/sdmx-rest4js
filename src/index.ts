@@ -457,14 +457,12 @@ const request2 = (...params: any[]): Promise<any> => {
   const s = typeof q === 'string' ? guessService(q) : getService(params[1]);
   const u = typeof q === 'string' ? q : getUrl(q, s);
   const o = typeof q === 'string' ? params[1] : params[2];
-  let t = null;
-  if (u.indexOf('/data/') > -1) {
-    t = 'data';
-  } else if (u.indexOf('/schema/') > -1) {
-    t = 'schema';
-  } else {
-    t = 'structure';
-  }
+  const t =
+    u.indexOf('/data/') > -1
+      ? 'data'
+      : u.indexOf('/schema/') > -1
+        ? 'schema'
+        : 'structure';
 
   const requestOptions = addHeaders(o, s, t);
   return fetch(u, requestOptions).then((response: any) => response);
