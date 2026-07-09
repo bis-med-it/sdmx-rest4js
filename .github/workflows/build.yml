@@ -5,9 +5,9 @@ name: Build
 
 on:
   push:
-    branches: [master, develop]
+    branches: [main]
   pull_request:
-    branches: [master, develop]
+    branches: [main]
 
 jobs:
   build:
@@ -20,22 +20,19 @@ jobs:
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install project
         run: npm ci
       - name: Build project
         run: npm run build
+      - name: Check coding guidelines
+        run: npm run lint
       - name: Run tests
         run: npm run test
       - name: Check test coverage
         run: npm run coverage
-      - name: Send coverage to codecov
-        uses: codecov/codecov-action@v1
-        with:
-          file: ./coverage/lcov.info
-      - name: Check coding guidelines
-        run: npm run lint
+      
