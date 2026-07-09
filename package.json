@@ -7,7 +7,7 @@
   "version": "2.20.0",
   "main": "./lib/index.js",
   "scripts": {
-    "prebuild": "rm -rf lib && mkdir lib",
+    "prebuild": "node -e \"require('fs').rmSync('lib', { recursive: true, force: true }); require('fs').mkdirSync('lib', { recursive: true });\"",
     "build": "tsc",
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .ts --reporter=lcov npm test",
     "test": "mocha test/**/*.test.ts",
