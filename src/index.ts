@@ -18,10 +18,10 @@ import { Service, services } from './service/service';
 import { UrlGenerator } from './utils/url-generator';
 import { ApiVersion, ApiResources } from './utils/api-version';
 import * as SdmxPatterns from './utils/sdmx-patterns';
+import { polyfill } from 'es6-promise';
+import 'isomorphic-fetch';
 
-const promise = require('es6-promise');
-promise.polyfill();
-const fetch = require('isomorphic-fetch');
+polyfill();
 
 const userAgent = 'sdmx-rest4js (https://github.com/sosna/sdmx-rest4js)';
 
