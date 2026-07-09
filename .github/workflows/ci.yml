@@ -43,30 +43,16 @@ jobs:
         run: npm run build
       - name: Run tests
         run: npm run test
-
-  coverage:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v7
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: npm
-      - name: Install project
-        run: npm ci
       - name: Check test coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 'lts/*'
         id: coverage_check
         continue-on-error: true
         run: npm run coverage
       - name: Print coverage summary
-        if: always()
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.node-version == 'lts/*'
         run: npx nyc report --reporter=text-summary --reporter=text --reporter=lcov
       - name: Upload coverage artifacts
-        if: always()
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.node-version == 'lts/*'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-ubuntu-node22
@@ -75,6 +61,6 @@ jobs:
             .nyc_output/**
           if-no-files-found: warn
       - name: Fail if coverage threshold not met
-        if: steps.coverage_check.outcome == 'failure'
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 'lts/*' && steps.coverage_check.outcome == 'failure'
         run: exit 1
       
