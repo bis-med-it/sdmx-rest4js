@@ -32,13 +32,13 @@ jobs:
           cache: npm
       - name: Install project
         run: npm ci
-      - name: Check formatting
-        run: npm run format:check
-      - name: Lint project
-        run: npm run lint
       - name: Build project
         run: npm run build
-      - name: Type-check project
+      - name: Check formatting
+        run: npm run format:check
+      - name: Run lint checks
+        run: npm run lint
+      - name: Run type checks
         run: npm run typecheck
       - name: Run tests
         run: npm run test
