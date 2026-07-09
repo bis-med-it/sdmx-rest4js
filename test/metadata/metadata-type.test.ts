@@ -5,7 +5,6 @@ import { isItemScheme } from '../../src/metadata/metadata-type';
 chai.should();
 
 describe('Metadata types', () => {
-
   const expectedTypes = [
     'datastructure',
     'metadatastructure',

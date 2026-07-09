@@ -8,7 +8,6 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 describe('API', () => {
-
   it('offers the expected functions and objects', () => {
     sdmxrest.should.have.property('getService');
     sdmxrest.should.have.property('services').that.is.an('array');
@@ -30,28 +29,29 @@ describe('API', () => {
     sdmxrest.should.have.property('data').that.is.an('object');
     sdmxrest.data.should.have.property('DataFormat').that.is.not.undefined;
     sdmxrest.data.should.have.property('DataDetail').that.is.not.undefined;
-    sdmxrest.metadata.should.have.property('MetadataDetail')
-      .that.is.not.undefined;
-    sdmxrest.metadata.should.have.property('MetadataFormat')
-      .that.is.not.undefined;
-    sdmxrest.metadata.should.have.property('MetadataReferences')
-      .that.is.not.undefined;
-    sdmxrest.availability.should.have.property('AvailabilityMode')
-      .that.is.not.undefined;
-    sdmxrest.availability.should.have.property('AvailabilityReferences')
-      .that.is.not.undefined;
-    sdmxrest.metadata.should.have.property('MetadataType').that.is.not.undefined;
+    sdmxrest.metadata.should.have.property('MetadataDetail').that.is.not
+      .undefined;
+    sdmxrest.metadata.should.have.property('MetadataFormat').that.is.not
+      .undefined;
+    sdmxrest.metadata.should.have.property('MetadataReferences').that.is.not
+      .undefined;
+    sdmxrest.availability.should.have.property('AvailabilityMode').that.is.not
+      .undefined;
+    sdmxrest.availability.should.have.property('AvailabilityReferences').that.is
+      .not.undefined;
+    sdmxrest.metadata.should.have.property('MetadataType').that.is.not
+      .undefined;
     sdmxrest.schema.should.have.property('SchemaContext').that.is.not.undefined;
     sdmxrest.schema.should.have.property('SchemaFormat').that.is.not.undefined;
     sdmxrest.utils.should.have.property('ApiVersion').that.is.not.undefined;
     sdmxrest.utils.should.have.property('ApiResources').that.is.not.undefined;
     sdmxrest.utils.should.have.property('SdmxPatterns').that.is.not.undefined;
-    sdmxrest.utils.SdmxPatterns.should.have.property('IDType')
+    sdmxrest.utils.SdmxPatterns.should.have
+      .property('IDType')
       .that.is.a('regexp');
   });
 
   describe('when using getService()', () => {
-
     it('offers to use existing services', () => {
       const service = sdmxrest.getService('ECB');
       service.should.be.an('object');
@@ -76,8 +76,11 @@ describe('API', () => {
 
     it('fails if the requested service is unknown', () => {
       const test = () => sdmxrest.getService('UNKNOWN');
-      should.Throw(test, ReferenceError,
-        'is not in the list of predefined services');
+      should.Throw(
+        test,
+        ReferenceError,
+        'is not in the list of predefined services',
+      );
     });
 
     it('fails if the input is not of the expected type', () => {
@@ -93,7 +96,6 @@ describe('API', () => {
   });
 
   describe('when using services', () => {
-
     it('list some services', () => {
       sdmxrest.services.should.be.an('array');
       sdmxrest.services.should.have.property('length').that.is.gte(5);
@@ -105,7 +107,6 @@ describe('API', () => {
   });
 
   describe('when using getDataQuery()', () => {
-
     it('offers to create a data query from properties', () => {
       const input = {
         flow: 'EXR',
@@ -136,7 +137,6 @@ describe('API', () => {
   });
 
   describe('when using getDataQuery2()', () => {
-
     it('offers to create a data query from properties', () => {
       const input = {
         context: 'dataflow=ECB:EXR(*)',
@@ -166,7 +166,6 @@ describe('API', () => {
   });
 
   describe('when using getMetadataQuery()', () => {
-
     it('offers to create a metadata query from properties', () => {
       const input = {
         resource: 'codelist',
@@ -193,7 +192,6 @@ describe('API', () => {
   });
 
   describe('when using getAvailabilityQuery()', () => {
-
     it('offers to create an availability query from properties', () => {
       const input = {
         flow: 'EXR',
@@ -222,7 +220,6 @@ describe('API', () => {
   });
 
   describe('when using getAvailabilityQuery2()', () => {
-
     it('offers to create an availability query from properties', () => {
       const input = {
         context: 'dataflow=ECB:EXR(*)',
@@ -241,13 +238,13 @@ describe('API', () => {
     });
 
     it('fails if the input is not of the expected type', () => {
-      const test = () => sdmxrest.getAvailabilityQuery2({ test: 'TEST' } as any);
+      const test = () =>
+        sdmxrest.getAvailabilityQuery2({ test: 'TEST' } as any);
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });
 
   describe('when using getSchemaQuery()', () => {
-
     it('offers to create a schema query from properties', () => {
       const input = {
         context: 'datastructure',
@@ -274,9 +271,11 @@ describe('API', () => {
   });
 
   describe('when using getUrl()', () => {
-
     it('creates a URL from a data query and a service objects', () => {
-      const query = sdmxrest.getDataQuery({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' });
+      const query = sdmxrest.getDataQuery({
+        flow: 'EXR',
+        key: 'A.CHF.NOK.SP00.A',
+      });
       const service = sdmxrest.getService('ECB');
       const url = sdmxrest.getUrl(query, service);
       url.should.be.a('string');
@@ -286,7 +285,10 @@ describe('API', () => {
     });
 
     it('creates a URL from a metadata query and a service objects', () => {
-      const url = sdmxrest.getUrl({ resource: 'codelist', id: 'CL_FREQ' }, 'ECB');
+      const url = sdmxrest.getUrl(
+        { resource: 'codelist', id: 'CL_FREQ' },
+        'ECB',
+      );
       url.should.be.a('string');
       url.should.contain('sdw-wsrest.ecb.europa.eu');
       url.should.contain('codelist');
@@ -500,7 +502,10 @@ describe('API', () => {
       test = () => sdmxrest.getUrl({}, sdmxrest.getService('ECB'));
       should.Throw(test, Error, 'Not a valid query');
 
-      const query = sdmxrest.getDataQuery({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' });
+      const query = sdmxrest.getDataQuery({
+        flow: 'EXR',
+        key: 'A.CHF.NOK.SP00.A',
+      });
       test = () => sdmxrest.getUrl(query, sdmxrest.getService('TEST'));
       should.Throw(test, Error, 'not in the list of predefined services');
 
@@ -510,13 +515,14 @@ describe('API', () => {
   });
 
   describe('when using request()', () => {
-
     it('offers to execute a request from a query and service objects', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' }, 'ECB');
+      const response = sdmxrest.request(
+        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
+        'ECB',
+      );
       return response.should.eventually.equal('OK');
     });
 
@@ -524,7 +530,9 @@ describe('API', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK');
-      const response = sdmxrest.request('http://sdw-wsrest.ecb.europa.eu/service/data/EXR');
+      const response = sdmxrest.request(
+        'http://sdw-wsrest.ecb.europa.eu/service/data/EXR',
+      );
       return response.should.eventually.equal('OK');
     });
 
@@ -549,7 +557,9 @@ describe('API', () => {
         .get((uri: string) => uri.indexOf('ICP') > -1)
         .reply(404);
       const response = sdmxrest.request(
-        { flow: 'ICP', updatedAfter: '2016-01-01T14:54:27Z' }, 'ECB');
+        { flow: 'ICP', updatedAfter: '2016-01-01T14:54:27Z' },
+        'ECB',
+      );
       response.should.be.fulfilled;
       return response.should.not.be.rejected;
     });
@@ -562,52 +572,63 @@ describe('API', () => {
 
     it('adds an accept header to data queries if the service has a default format', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) =>
-          h[0].indexOf('application/vnd.sdmx.data+json') > -1)
+        .matchHeader(
+          'accept',
+          (h: any) => h[0].indexOf('application/vnd.sdmx.data+json') > -1,
+        )
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' }, 'ECB');
+      const response = sdmxrest.request(
+        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
+        'ECB',
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('adds an accept header to structure queries if the service has a default format', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) =>
-          h[0].indexOf('application/vnd.sdmx.structure+xml') > -1)
+        .matchHeader(
+          'accept',
+          (h: any) => h[0].indexOf('application/vnd.sdmx.structure+xml') > -1,
+        )
         .get((uri: string) => uri.indexOf('codelist') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ resource: 'codelist', id: 'CL_FREQ' }, 'ECB');
+      const response = sdmxrest.request(
+        { resource: 'codelist', id: 'CL_FREQ' },
+        'ECB',
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('adds an accept header to schema queries if the service has a default format', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) =>
-          h[0].indexOf('application/xml') > -1)
+        .matchHeader('accept', (h: any) => h[0].indexOf('application/xml') > -1)
         .get((uri: string) => uri.indexOf('schema') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ context: 'dataflow', agency: 'ECB', id: 'EXR' }, 'ECB');
+      const response = sdmxrest.request(
+        { context: 'dataflow', agency: 'ECB', id: 'EXR' },
+        'ECB',
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('adds an accept header to data URLs if the service has a default format', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) =>
-          h[0].indexOf('application/vnd.sdmx.data+json') > -1)
+        .matchHeader(
+          'accept',
+          (h: any) => h[0].indexOf('application/vnd.sdmx.data+json') > -1,
+        )
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK');
-      const url = 'http://sdw-wsrest.ecb.europa.eu/service/data/EXR/A..EUR.SP00.A';
+      const url =
+        'http://sdw-wsrest.ecb.europa.eu/service/data/EXR/A..EUR.SP00.A';
       const response = sdmxrest.request(url);
       return response.should.eventually.equal('OK');
     });
 
     it('does not overwrite the accept header passed by the client (data)', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) =>
-          h[0].indexOf('application/xml') > -1)
+        .matchHeader('accept', (h: any) => h[0].indexOf('application/xml') > -1)
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK');
       const opts = {
@@ -615,15 +636,22 @@ describe('API', () => {
           accept: 'application/xml',
         },
       };
-      const response =
-        sdmxrest.request({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' }, 'ECB', opts);
+      const response = sdmxrest.request(
+        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
+        'ECB',
+        opts,
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('does not overwrite the accept header passed by the client (structure)', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) =>
-          h[0].indexOf('application/vnd.sdmx.structure+json;version=1.0.0') > -1)
+        .matchHeader(
+          'accept',
+          (h: any) =>
+            h[0].indexOf('application/vnd.sdmx.structure+json;version=1.0.0') >
+            -1,
+        )
         .get((uri: string) => uri.indexOf('codelist') > -1)
         .reply(200, 'OK');
       const opts = {
@@ -631,15 +659,21 @@ describe('API', () => {
           accept: 'application/vnd.sdmx.structure+json;version=1.0.0',
         },
       };
-      const response =
-        sdmxrest.request({ resource: 'codelist', id: 'CL_FREQ' }, 'ECB', opts);
+      const response = sdmxrest.request(
+        { resource: 'codelist', id: 'CL_FREQ' },
+        'ECB',
+        opts,
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('does not overwrite the accept header passed by the client (schema)', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) =>
-          h[0].indexOf('application/vnd.sdmx.structure+xml;version=2.1') > -1)
+        .matchHeader(
+          'accept',
+          (h: any) =>
+            h[0].indexOf('application/vnd.sdmx.structure+xml;version=2.1') > -1,
+        )
         .get((uri: string) => uri.indexOf('schema') > -1)
         .reply(200, 'OK');
       const opts = {
@@ -647,8 +681,11 @@ describe('API', () => {
           accept: 'application/vnd.sdmx.structure+xml;version=2.1',
         },
       };
-      const response =
-        sdmxrest.request({ context: 'dataflow', agency: 'ECB', id: 'EXR' }, 'ECB', opts);
+      const response = sdmxrest.request(
+        { context: 'dataflow', agency: 'ECB', id: 'EXR' },
+        'ECB',
+        opts,
+      );
       return response.should.eventually.equal('OK');
     });
 
@@ -657,8 +694,7 @@ describe('API', () => {
         .matchHeader('accept', (h: any) => h[0] === '*/*')
         .get((uri: string) => uri.indexOf('EO') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ flow: 'EO' }, 'OECD');
+      const response = sdmxrest.request({ flow: 'EO' }, 'OECD');
       return response.should.eventually.equal('OK');
     });
 
@@ -667,8 +703,10 @@ describe('API', () => {
         .matchHeader('accept', (h: any) => h[0] === '*/*')
         .get((uri: string) => uri.indexOf('codelist') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ resource: 'codelist', id: 'CL_FREQ' }, 'OECD');
+      const response = sdmxrest.request(
+        { resource: 'codelist', id: 'CL_FREQ' },
+        'OECD',
+      );
       return response.should.eventually.equal('OK');
     });
 
@@ -677,19 +715,26 @@ describe('API', () => {
         .matchHeader('accept', (h: any) => h[0] === '*/*')
         .get((uri: string) => uri.indexOf('schema') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ context: 'dataflow', agency: 'ECB', id: 'EXR' }, 'OECD');
+      const response = sdmxrest.request(
+        { context: 'dataflow', agency: 'ECB', id: 'EXR' },
+        'OECD',
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('adds a default user agent to queries', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('user-agent', (h: any) =>
-          h[0] === 'sdmx-rest4js (https://github.com/sosna/sdmx-rest4js)')
+        .matchHeader(
+          'user-agent',
+          (h: any) =>
+            h[0] === 'sdmx-rest4js (https://github.com/sosna/sdmx-rest4js)',
+        )
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' }, 'ECB');
+      const response = sdmxrest.request(
+        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
+        'ECB',
+      );
       return response.should.eventually.equal('OK');
     });
 
@@ -703,8 +748,11 @@ describe('API', () => {
           'user-agent': 'test',
         },
       };
-      const response =
-        sdmxrest.request({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' }, 'ECB', opts);
+      const response = sdmxrest.request(
+        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
+        'ECB',
+        opts,
+      );
       return response.should.eventually.equal('OK');
     });
 
@@ -713,8 +761,10 @@ describe('API', () => {
         .matchHeader('accept-encoding', (h: any) => h[0] === 'gzip,deflate')
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK');
-      const response =
-        sdmxrest.request({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' }, 'ECB');
+      const response = sdmxrest.request(
+        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
+        'ECB',
+      );
       return response.should.eventually.equal('OK');
     });
 
@@ -726,8 +776,11 @@ describe('API', () => {
       const opts = {
         compress: false,
       };
-      const response =
-        sdmxrest.request({ flow: 'EXR', key: 'A.CHF.NOK.SP00.A' }, 'ECB', opts);
+      const response = sdmxrest.request(
+        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
+        'ECB',
+        opts,
+      );
       return response.should.eventually.equal('OK');
     });
   });
@@ -738,7 +791,10 @@ describe('API', () => {
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK', { 'X-My-Headers': 'My Header value' });
 
-      const request = sdmxrest.getDataQuery({ flow: 'EXR', key: 'A.CHF.EUR.SP00.A' });
+      const request = sdmxrest.getDataQuery({
+        flow: 'EXR',
+        key: 'A.CHF.EUR.SP00.A',
+      });
       return sdmxrest.request2(request, 'ECB').then((response: any) => {
         response.should.have.property('status').that.equals(200);
         response.should.have.property('headers');
@@ -748,8 +804,7 @@ describe('API', () => {
   });
 
   describe('when using checkStatus()', () => {
-    it('throws an errir in case there is no response', () => {
-    });
+    it('throws an errir in case there is no response', () => {});
 
     it('throws an error in case there is an issue with the response', () => {
       const request = sdmxrest.getDataQuery({ flow: 'TEST' });
@@ -764,7 +819,11 @@ describe('API', () => {
       const request = sdmxrest.getDataQuery({ flow: 'TEST' });
       return sdmxrest.request2(request, 'ECB').then((response: any) => {
         const test = () => sdmxrest.checkStatus(request, response);
-        return should.not.throw(test, RangeError, 'Request failed with error code 306');
+        return should.not.throw(
+          test,
+          RangeError,
+          'Request failed with error code 306',
+        );
       });
     });
 
@@ -775,7 +834,11 @@ describe('API', () => {
       const request = sdmxrest.getDataQuery({ flow: 'TEST' });
       return sdmxrest.request2(request, 'ECB').then((response: any) => {
         const test = () => sdmxrest.checkStatus(request, response);
-        return should.not.throw(test, RangeError, 'Request failed with error code 100');
+        return should.not.throw(
+          test,
+          RangeError,
+          'Request failed with error code 100',
+        );
       });
     });
   });
@@ -786,10 +849,12 @@ describe('API', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK', { 'Content-Type': fmt });
-      return sdmxrest.request2({ flow: 'EXR', key: 'A.CHF.EUR.SP00.A' }, 'ECB').then((response: any) => {
-        const test = () => sdmxrest.checkMediaType(fmt, response);
-        return should.not.throw(test, RangeError, 'Not an SDMX format');
-      });
+      return sdmxrest
+        .request2({ flow: 'EXR', key: 'A.CHF.EUR.SP00.A' }, 'ECB')
+        .then((response: any) => {
+          const test = () => sdmxrest.checkMediaType(fmt, response);
+          return should.not.throw(test, RangeError, 'Not an SDMX format');
+        });
     });
 
     it('accepts SDMX metadata formats', () => {
@@ -797,10 +862,12 @@ describe('API', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
         .get((uri: string) => uri.indexOf('codelist') > -1)
         .reply(200, 'OK', { 'Content-Type': fmt });
-      return sdmxrest.request2({ resource: 'codelist' }, 'ECB').then((response: any) => {
-        const test = () => sdmxrest.checkMediaType(fmt, response);
-        return should.not.throw(test, RangeError, 'Not an SDMX format');
-      });
+      return sdmxrest
+        .request2({ resource: 'codelist' }, 'ECB')
+        .then((response: any) => {
+          const test = () => sdmxrest.checkMediaType(fmt, response);
+          return should.not.throw(test, RangeError, 'Not an SDMX format');
+        });
     });
 
     it('accepts generic formats', () => {
@@ -808,10 +875,12 @@ describe('API', () => {
       nock('http://sdw-wsrest.ecb.europa.eu')
         .get((uri: string) => uri.indexOf('codelist') > -1)
         .reply(200, 'OK', { 'Content-Type': fmt });
-      return sdmxrest.request2({ resource: 'codelist' }, 'ECB').then((response: any) => {
-        const test = () => sdmxrest.checkMediaType(fmt, response);
-        return should.not.throw(test, RangeError, 'Not an SDMX format');
-      });
+      return sdmxrest
+        .request2({ resource: 'codelist' }, 'ECB')
+        .then((response: any) => {
+          const test = () => sdmxrest.checkMediaType(fmt, response);
+          return should.not.throw(test, RangeError, 'Not an SDMX format');
+        });
     });
 
     it('throws an error in case the format is not an SDMX one', () => {
@@ -846,10 +915,16 @@ describe('API', () => {
           accept: fmt,
         },
       };
-      return sdmxrest.request2({ flow: 'EXR' }, 'ECB', opts).then((response: any) => {
-        const test = () => sdmxrest.checkMediaType(fmt, response);
-        return should.Throw(test, RangeError, 'Wrong format: requested ' + fmt + ' but got application/xml');
-      });
+      return sdmxrest
+        .request2({ flow: 'EXR' }, 'ECB', opts)
+        .then((response: any) => {
+          const test = () => sdmxrest.checkMediaType(fmt, response);
+          return should.Throw(
+            test,
+            RangeError,
+            'Wrong format: requested ' + fmt + ' but got application/xml',
+          );
+        });
     });
 
     it('Does not throw an error in case the received format is the requested one', () => {
@@ -862,10 +937,12 @@ describe('API', () => {
           accept: fmt,
         },
       };
-      return sdmxrest.request2({ flow: 'EXR' }, 'ECB', opts).then((response: any) => {
-        const test = () => sdmxrest.checkMediaType(fmt, response);
-        return should.not.Throw(test);
-      });
+      return sdmxrest
+        .request2({ flow: 'EXR' }, 'ECB', opts)
+        .then((response: any) => {
+          const test = () => sdmxrest.checkMediaType(fmt, response);
+          return should.not.Throw(test);
+        });
     });
 
     it('Does not throw an error in case the only difference is the space character', () => {
@@ -879,14 +956,17 @@ describe('API', () => {
           accept: fmt1,
         },
       };
-      return sdmxrest.request2({ flow: 'EXR' }, 'ECB', opts).then((response: any) => {
-        const test = () => sdmxrest.checkMediaType(fmt1, response);
-        return should.not.Throw(test);
-      });
+      return sdmxrest
+        .request2({ flow: 'EXR' }, 'ECB', opts)
+        .then((response: any) => {
+          const test = () => sdmxrest.checkMediaType(fmt1, response);
+          return should.not.Throw(test);
+        });
     });
 
     it('Does not throw an error in case the received format is one of the requested ones', () => {
-      const fmt = 'application/vnd.sdmx.data+json;version=1.0.0, application/json;q=0.9, text/csv;q=0.5, */*;q=0.4';
+      const fmt =
+        'application/vnd.sdmx.data+json;version=1.0.0, application/json;q=0.9, text/csv;q=0.5, */*;q=0.4';
       nock('http://sdw-wsrest.ecb.europa.eu')
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK', { 'Content-Type': 'text/csv' });
@@ -895,14 +975,17 @@ describe('API', () => {
           accept: fmt,
         },
       };
-      return sdmxrest.request2({ flow: 'EXR' }, 'ECB', opts).then((response: any) => {
-        const test = () => sdmxrest.checkMediaType(fmt, response);
-        return should.not.Throw(test);
-      });
+      return sdmxrest
+        .request2({ flow: 'EXR' }, 'ECB', opts)
+        .then((response: any) => {
+          const test = () => sdmxrest.checkMediaType(fmt, response);
+          return should.not.Throw(test);
+        });
     });
 
     it('Throws an error in case the received format is not one of the requested ones', () => {
-      const fmt = 'application/vnd.sdmx.data+json;version=1.0.0, application/json;q=0.9, text/csv;q=0.5, */*;q=0.4';
+      const fmt =
+        'application/vnd.sdmx.data+json;version=1.0.0, application/json;q=0.9, text/csv;q=0.5, */*;q=0.4';
       nock('http://sdw-wsrest.ecb.europa.eu')
         .get((uri: string) => uri.indexOf('EXR') > -1)
         .reply(200, 'OK', { 'Content-Type': 'application/xml' });
@@ -911,10 +994,12 @@ describe('API', () => {
           accept: fmt,
         },
       };
-      return sdmxrest.request2({ flow: 'EXR' }, 'ECB', opts).then((response: any) => {
-        const test = () => sdmxrest.checkMediaType(fmt, response);
-        return should.Throw(test, RangeError);
-      });
+      return sdmxrest
+        .request2({ flow: 'EXR' }, 'ECB', opts)
+        .then((response: any) => {
+          const test = () => sdmxrest.checkMediaType(fmt, response);
+          return should.Throw(test, RangeError);
+        });
     });
   });
 });

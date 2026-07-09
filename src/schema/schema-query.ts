@@ -20,7 +20,7 @@ const isValidExplicit = (input: any, errors: string[]): boolean => {
   const valid = typeof input === 'boolean';
   if (!valid) {
     errors.push(
-      `${input} is not a valid value for explicit. Must be true or false`
+      `${input} is not a valid value for explicit. Must be true or false`,
     );
   }
   return valid;
@@ -48,7 +48,6 @@ const isValidQuery = (query: any): { isValid: any; errors: string[] } => {
 
 // A query for XML schemas, as defined by the SDMX RESTful API.
 class SchemaQuery {
-
   static from(opts: any): any {
     const query = {
       context: opts?.context,

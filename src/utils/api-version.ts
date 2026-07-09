@@ -1,6 +1,5 @@
 // Lists the various versions of the SDMX RESTful API.
 const versions: { [key: string]: string } = {
-
   // The initial version of the SDMX RESTFul API, released in April 2011.
   v1_0_0: 'v1.0.0',
 
@@ -73,7 +72,9 @@ const resourcesV3 = [
   'actualconstraint',
   'allowedconstraint',
   'availableconstraint',
-].concat(resourcesV1).sort();
+]
+  .concat(resourcesV1)
+  .sort();
 
 const resourcesV5 = [
   'transformationscheme',
@@ -82,7 +83,9 @@ const resourcesV5 = [
   'customtypescheme',
   'namepersonalisationscheme',
   'namealiasscheme',
-].concat(resourcesV3).sort();
+]
+  .concat(resourcesV3)
+  .sort();
 
 const resourcesV6 = [
   'datastructure',
@@ -127,7 +130,6 @@ const resourcesV6 = [
 ].sort();
 
 const resources: { [key: string]: string[] } = {
-
   // The set of valid resources for v1.0.0.
   v1_0_0: resourcesV1,
 

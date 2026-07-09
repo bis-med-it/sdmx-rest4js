@@ -23,7 +23,7 @@ const isValidHistory = (input: any, errors: string[]): boolean => {
   const valid = typeof input === 'boolean';
   if (!valid) {
     errors.push(
-      `${input} is not a valid value for history. Must be true or false`
+      `${input} is not a valid value for history. Must be true or false`,
     );
   }
   return valid;
@@ -33,7 +33,7 @@ const isValidNObs = (input: any, name: string, errors: string[]): boolean => {
   const valid = typeof input === 'number' && input > 0;
   if (!valid) {
     errors.push(
-      `${input} is not a valid value for ${name}. Must be a positive integer`
+      `${input} is not a valid value for ${name}. Must be a positive integer`,
     );
   }
   return valid;
@@ -70,7 +70,7 @@ const isValidKey = (input: any, name: string, errors: string[]): boolean => {
 const isValidFilters = (
   input: any,
   name: string,
-  errors: string[]
+  errors: string[],
 ): boolean => {
   let valid = true;
   for (const filter of input) {
@@ -119,7 +119,6 @@ const expected = [
 
 // A query for data, as defined by the SDMX RESTful API.
 class DataQuery {
-
   static from(opts: any): any {
     if (opts) {
       for (const k of Object.keys(opts)) {

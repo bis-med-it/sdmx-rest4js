@@ -35,7 +35,7 @@ const handleQueryParams = (q: any): string => {
 const createShortAvailabilityQuery = (
   q: any,
   s: any,
-  api_number: number
+  api_number: number,
 ): string => {
   validateDataForV2(q, s);
   let u = createEntryPoint(s);
@@ -48,7 +48,7 @@ const createShortAvailabilityQuery = (
 const createAvailabilityQuery = (
   q: any,
   s: any,
-  api_number: number
+  api_number: number,
 ): string => {
   validateDataForV2(q, s);
   let url = createEntryPoint(s);
@@ -68,7 +68,6 @@ const createAvailabilityQuery = (
 };
 
 class Handler {
-
   handle(q: any, s: any, skip?: boolean): string {
     const api = ApiNumber[getKeyFromVersion(s.api)];
     if (api < ApiNumber.v2_0_0) {

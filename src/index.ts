@@ -30,8 +30,7 @@ const checkStatus = (query: any, response: any): void => {
     throw ReferenceError('Not a valid response');
   }
   const code = response.status;
-  if (!((100 <= code && code < 400) ||
-  (code === 404 && query.updatedAfter))) {
+  if (!((100 <= code && code < 400) || (code === 404 && query.updatedAfter))) {
     throw RangeError(`Request failed with error code ${code}`);
   }
 };
@@ -46,14 +45,12 @@ const isFormat = (input: any, expected: { [key: string]: string }): boolean => {
   return out;
 };
 
-const isDataFormat = (format: any): boolean =>
-  isFormat(format, DataFormat);
+const isDataFormat = (format: any): boolean => isFormat(format, DataFormat);
 
 const isMetadataFormat = (format: any): boolean =>
   isFormat(format, MetadataFormat);
 
-const isSchemaFormat = (format: any): boolean =>
-  isFormat(format, SchemaFormat);
+const isSchemaFormat = (format: any): boolean => isFormat(format, SchemaFormat);
 
 const isGenericFormat = (format: any): boolean => {
   const formats = [
@@ -71,10 +68,12 @@ const isRequestedFormat = (requested: string, received: string): boolean =>
 const checkMediaType = (requested: string, response: any): void => {
   let fmt = response.headers.get('content-type');
   fmt = fmt ? fmt.replace(/; version=/, ';version=') : fmt;
-  if (!(isDataFormat(fmt) ||
-  isMetadataFormat(fmt) ||
-  isGenericFormat(fmt) ||
-  isSchemaFormat(fmt))) {
+  if (!(
+    isDataFormat(fmt) ||
+    isMetadataFormat(fmt) ||
+    isGenericFormat(fmt) ||
+    isSchemaFormat(fmt)
+  )) {
     throw RangeError(`Not an SDMX format: ${fmt}`);
   }
   if (!isRequestedFormat(requested, fmt)) {
@@ -157,12 +156,14 @@ const getService = (input: any): any => {
   if (typeof input === 'string') {
     if (!(Service as any)[input]) {
       throw ReferenceError(
-        `${input} is not in the list of predefined services`
+        `${input} is not in the list of predefined services`,
       );
     }
     return (Service as any)[input];
-  } else if (input instanceof Object &&
-  Object.prototype.toString.call(input) === '[object Object]') {
+  } else if (
+    input instanceof Object &&
+    Object.prototype.toString.call(input) === '[object Object]'
+  ) {
     return Service.from(input);
   } else {
     throw TypeError(`Invalid type of ${input}. Expected an object or a string`);
@@ -322,8 +323,7 @@ const getMetadataQuery = (input: any): any => MetadataQuery.from(input);
 // not compliant with the SDMX 2.1 RESTful specification is supplied for one of
 // the properties.
 //
-const getAvailabilityQuery = (input: any): any =>
-  AvailabilityQuery.from(input);
+const getAvailabilityQuery = (input: any): any => AvailabilityQuery.from(input);
 
 //
 // Get an SDMX 3.0 RESTful availability query.
@@ -410,20 +410,31 @@ const getUrl = (query: any, service: any): string => {
     q = getMetadataQuery(query);
   } else if (query.context != null && query.agency != null) {
     q = getSchemaQuery(query);
-  } else if (query.flow != null &&
-  (query.references != null || query.component != null ||
-  query.mode != null)) {
+  } else if (
+    query.flow != null &&
+    (query.references != null || query.component != null || query.mode != null)
+  ) {
     q = getAvailabilityQuery(query);
-  } else if (query.references != null || query.component != null ||
-  query.mode != null) {
+  } else if (
+    query.references != null ||
+    query.component != null ||
+    query.mode != null
+  ) {
     q = getAvailabilityQuery2(query);
   } else if (query.flow != null) {
     q = getDataQuery(query);
-  } else if (query.context != null || query.key != null ||
-  query.filters != null || query.firstNObs != null ||
-  query.lastNObs != null || query.obsDimension != null ||
-  query.history != null || query.attributes != null ||
-  query.measures != null || query.updatedAfter != null) {
+  } else if (
+    query.context != null ||
+    query.key != null ||
+    query.filters != null ||
+    query.firstNObs != null ||
+    query.lastNObs != null ||
+    query.obsDimension != null ||
+    query.history != null ||
+    query.attributes != null ||
+    query.measures != null ||
+    query.updatedAfter != null
+  ) {
     q = getDataQuery2(query);
   }
   if (!q) {
@@ -456,8 +467,7 @@ const request2 = (...params: any[]): Promise<any> => {
   }
 
   const requestOptions = addHeaders(o, s, t);
-  return fetch(u, requestOptions)
-    .then((response: any) => response);
+  return fetch(u, requestOptions).then((response: any) => response);
 };
 
 //

@@ -7,7 +7,6 @@ import { AvailabilityQuery } from '../../src/avail/availability-query';
 const should = chai.should();
 
 describe('Availability queries', () => {
-
   it('has the expected properties', () => {
     const q = AvailabilityQuery.from({ flow: 'ICP' });
     q.should.be.an('object');
@@ -41,7 +40,6 @@ describe('Availability queries', () => {
   });
 
   describe('when setting the flow', () => {
-
     it('throws an exception when the flow is not set', () => {
       let test = () => AvailabilityQuery.from({ flow: ' ' });
       should.Throw(test, Error, 'Not a valid availability query');
@@ -57,7 +55,6 @@ describe('Availability queries', () => {
   });
 
   describe('when setting the key', () => {
-
     it('a string representing the key can be used', () => {
       const flow = 'EXR';
       const key = '.CHF+NOK.EUR..2';
@@ -67,39 +64,21 @@ describe('Availability queries', () => {
     });
 
     it('an array of arrays can be used to build the key', () => {
-      const values = [
-        ['D'],
-        ['NOK', 'RUB', 'CHF'],
-        ['EUR'],
-        [],
-        ['A'],
-      ];
+      const values = [['D'], ['NOK', 'RUB', 'CHF'], ['EUR'], [], ['A']];
       const query = AvailabilityQuery.from({ flow: 'EXR', key: values });
       query.should.have.property('flow').that.equals('EXR');
       query.should.have.property('key').that.equals('D.NOK+RUB+CHF.EUR..A');
     });
 
     it('a mixed array can be used to build the key', () => {
-      const values = [
-        'D',
-        ['NOK', 'RUB', 'CHF'],
-        '',
-        'SP00',
-        undefined,
-      ];
+      const values = ['D', ['NOK', 'RUB', 'CHF'], '', 'SP00', undefined];
       const query = AvailabilityQuery.from({ flow: 'EXR', key: values });
       query.should.have.property('flow').that.equals('EXR');
       query.should.have.property('key').that.equals('D.NOK+RUB+CHF..SP00.');
     });
 
     it('an exotic array can be used to build the key', () => {
-      const values = [
-        '',
-        ['NOK', 'RUB', 'CHF'],
-        ['EUR'],
-        undefined,
-        null,
-      ];
+      const values = ['', ['NOK', 'RUB', 'CHF'], ['EUR'], undefined, null];
       const query = AvailabilityQuery.from({ flow: 'EXR', key: values });
       query.should.have.property('flow').that.equals('EXR');
       query.should.have.property('key').that.equals('.NOK+RUB+CHF.EUR..');
@@ -112,7 +91,6 @@ describe('Availability queries', () => {
   });
 
   describe('when setting the provider', () => {
-
     it('a string representing the provider can be used', () => {
       const flow = 'EXR';
       let provider = 'ECB';
@@ -150,7 +128,6 @@ describe('Availability queries', () => {
   });
 
   describe('when setting the start and end periods', () => {
-
     it('a string representing years can be passed', () => {
       const flow = 'EXR';
       const start = '2000';
@@ -225,7 +202,6 @@ describe('Availability queries', () => {
   });
 
   describe('when setting the updatedAfter timestamp', () => {
-
     it('a string representing a timestamp can be passed', () => {
       const flow = 'EXR';
       const last = '2016-03-04T09:57:00Z';
@@ -235,10 +211,12 @@ describe('Availability queries', () => {
     });
 
     it('throws an exception if the value for updatedAfter is invalid', () => {
-      let test = () => AvailabilityQuery.from({ flow: 'EXR', updatedAfter: 'now' });
+      let test = () =>
+        AvailabilityQuery.from({ flow: 'EXR', updatedAfter: 'now' });
       should.Throw(test, Error, 'Not a valid availability query');
 
-      test = () => AvailabilityQuery.from({ flow: 'EXR', updatedAfter: '2000-Q1' });
+      test = () =>
+        AvailabilityQuery.from({ flow: 'EXR', updatedAfter: '2000-Q1' });
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });

@@ -1,6 +1,5 @@
 // Specifies the amount of information to be returned for data queries.
 const details = {
-
   // All data and documentation, including annotations.
   FULL: 'full',
 

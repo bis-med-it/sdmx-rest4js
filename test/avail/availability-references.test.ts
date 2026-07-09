@@ -4,7 +4,6 @@ import { AvailabilityReferences } from '../../src/avail/availability-references'
 chai.should();
 
 describe('Availability references', () => {
-
   const expectedReferences = [
     'datastructure',
     'conceptscheme',

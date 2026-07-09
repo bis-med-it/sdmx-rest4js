@@ -5,7 +5,6 @@ import { DataFormat } from '../../src/data/data-format';
 chai.should();
 
 describe('Data formats', () => {
-
   const expected = [
     'application/vnd.sdmx.genericdata+xml;version=2.1',
     'application/vnd.sdmx.structurespecificdata+xml;version=2.1',

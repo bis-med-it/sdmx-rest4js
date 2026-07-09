@@ -3,8 +3,8 @@ import { createEntryPoint, checkVersion } from '../utils/url-generator-common';
 
 const createSchemaQuery = (q: any, s: any): string => {
   let u = createEntryPoint(s);
-  const v = s.api === ApiVersion.v2_0_0 && q.version === 'latest'
-    ? '~' : q.version;
+  const v =
+    s.api === ApiVersion.v2_0_0 && q.version === 'latest' ? '~' : q.version;
   u += `schema/${q.context}/${q.agency}/${q.id}/${v}`;
   if (s.api === ApiVersion.v2_0_0) {
     if (q.obsDimension) u += `?dimensionAtObservation=${q.obsDimension}`;
@@ -46,7 +46,6 @@ const checkExplicit = (q: any, s: any): void => {
 };
 
 class Handler {
-
   handle(q: any, s: any, skip?: boolean): string {
     checkContext(q, s);
     checkExplicit(q, s);

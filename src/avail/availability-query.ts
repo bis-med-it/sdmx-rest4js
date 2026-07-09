@@ -25,15 +25,13 @@ const defaults = {
 const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
   flow: (i, e) => isValidPattern(i, FlowRefType, 'flows', e),
   key: (i, e) => isValidPattern(i, SeriesKeyType, 'series key', e),
-  provider: (i, e) => isValidPattern(i, MultipleProviderRefType,
-    'provider', e),
+  provider: (i, e) => isValidPattern(i, MultipleProviderRefType, 'provider', e),
   component: (i, e) => isValidPattern(i, NestedNCNameIDType, 'component', e),
   start: (i, e) => !i || isValidPeriod(i, 'start period', e),
   end: (i, e) => !i || isValidPeriod(i, 'end period', e),
   updatedAfter: (i, e) => !i || isValidDate(i, 'updatedAfter', e),
   mode: (i, e) => isValidEnum(i, AvailabilityMode, 'mode', e),
-  references: (i, e) => isValidEnum(i, AvailabilityReferences,
-    'references', e),
+  references: (i, e) => isValidEnum(i, AvailabilityReferences, 'references', e),
 };
 
 const isValidQuery = (q: any): { isValid: any; errors: string[] } => {
@@ -47,13 +45,12 @@ const isValidQuery = (q: any): { isValid: any; errors: string[] } => {
 };
 
 const toKeyString = (dims: any[]): string =>
-  dims.map((d) => (Array.isArray(d) ? d.join('+') : d ?? '')).join('.');
+  dims.map((d) => (Array.isArray(d) ? d.join('+') : (d ?? ''))).join('.');
 
 const toProviderString = (p: any[]): string => p.join('+');
 
 // A query for data availability, as defined by the SDMX RESTful API.
 class AvailabilityQuery {
-
   static from(opts: any): any {
     let key = opts?.key ?? defaults.key;
     if (Array.isArray(key)) key = toKeyString(key);

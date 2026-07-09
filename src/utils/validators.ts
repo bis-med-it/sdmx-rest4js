@@ -4,7 +4,7 @@ const validEnum = (
   input: any,
   list: { [key: string]: any },
   name: string,
-  errors: string[]
+  errors: string[],
 ): boolean => {
   let found = false;
   for (const v of Object.values(list)) {
@@ -15,7 +15,7 @@ const validEnum = (
   if (!found) {
     errors.push(
       `${input} is not in the list of supported ${name} ` +
-      `(${Object.values(list)})`
+        `(${Object.values(list)})`,
     );
   }
   return found;
@@ -25,7 +25,7 @@ const validMultipleEnum = (
   input: any,
   list: { [key: string]: any },
   name: string,
-  errors: string[]
+  errors: string[],
 ): boolean => {
   let found = false;
   if (input && input.indexOf('+') > -1) {
@@ -48,13 +48,13 @@ const validPattern = (
   input: any,
   regex: RegExp,
   name: string,
-  errors: string[]
+  errors: string[],
 ): any => {
   const valid = input && input.match(regex);
   if (!valid) {
     errors.push(
       `${input} is not compliant with the pattern defined for ` +
-      `${name} (${regex})`
+        `${name} (${regex})`,
     );
   }
   return valid;

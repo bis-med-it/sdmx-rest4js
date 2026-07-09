@@ -4,11 +4,7 @@ import { AvailabilityMode } from '../../src/avail/availability-mode';
 chai.should();
 
 describe('Availability modes', () => {
-
-  const expectedTypes = [
-    'exact',
-    'available',
-  ];
+  const expectedTypes = ['exact', 'available'];
 
   it('contains all the expected modes and only those', () => {
     let count = 0;

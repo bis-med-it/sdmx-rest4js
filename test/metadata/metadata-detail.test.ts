@@ -5,7 +5,6 @@ import { MetadataDetail } from '../../src/metadata/metadata-detail';
 chai.should();
 
 describe('Metadata detail', () => {
-
   const expectedDetails = [
     'full',
     'referencestubs',

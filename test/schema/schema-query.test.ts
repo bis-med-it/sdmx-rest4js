@@ -5,7 +5,6 @@ import { SchemaContext } from '../../src/schema/schema-context';
 const should = chai.should();
 
 describe('Schema query', () => {
-
   it('has the expected properties', () => {
     const q = {
       context: SchemaContext.DATA_STRUCTURE,
@@ -70,7 +69,6 @@ describe('Schema query', () => {
   });
 
   describe('when setting an agency', () => {
-
     it('a string representing the agency id can be passed', () => {
       let q = {
         context: 'datastructure',
@@ -143,7 +141,6 @@ describe('Schema query', () => {
   });
 
   describe('when setting a resource id', () => {
-
     it('a string representing the resource id can be passed', () => {
       let q = {
         context: 'datastructure',
@@ -192,7 +189,6 @@ describe('Schema query', () => {
   });
 
   describe('when setting a version', () => {
-
     it('a string representing the version can be passed', () => {
       let q = {
         context: 'datastructure',
@@ -286,7 +282,6 @@ describe('Schema query', () => {
   });
 
   describe('when setting whether measure is explicit', () => {
-
     it('a boolean can be passed', () => {
       const q = {
         context: 'datastructure',
@@ -313,7 +308,6 @@ describe('Schema query', () => {
   });
 
   describe('when setting the dimension at observation level', () => {
-
     it('a string representing the dimension at the obs level can be passed', () => {
       const q = {
         context: 'datastructure',

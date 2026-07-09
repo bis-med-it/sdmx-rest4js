@@ -89,7 +89,7 @@ const createV2AvailUrl = (q: any, s: any): string => {
 const createShortAvailabilityQuery = (
   q: any,
   s: any,
-  api_number: number
+  api_number: number,
 ): string => {
   if (api_number < ApiNumber.v2_0_0) {
     return createShortV1AvailUrl(q, s);
@@ -101,7 +101,7 @@ const createShortAvailabilityQuery = (
 const createAvailabilityQuery = (
   q: any,
   s: any,
-  api_number: number
+  api_number: number,
 ): string => {
   if (api_number < ApiNumber.v2_0_0) {
     return createV1AvailUrl(q, s);
@@ -111,7 +111,6 @@ const createAvailabilityQuery = (
 };
 
 class Handler {
-
   handle(q: any, s: any, skip?: boolean): string {
     const api_number = ApiNumber[getKeyFromVersion(s.api)];
     if (api_number < ApiNumber.v1_3_0) {
