@@ -14,7 +14,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"test/**/*.ts\"",
-    "test": "mocha test/**/*.test.ts",
+    "test": "mocha \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
