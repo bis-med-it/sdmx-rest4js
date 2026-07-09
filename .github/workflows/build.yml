@@ -34,8 +34,8 @@ jobs:
         run: npm ci
       - name: Build project
         run: npm run build
-      - name: Check coding guidelines
-        run: npm run lint
+      - name: Type-check project
+        run: npm run typecheck
       - name: Run tests
         run: npm run test
       - name: Check test coverage
