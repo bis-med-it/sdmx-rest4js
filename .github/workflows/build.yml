@@ -10,6 +10,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -32,14 +36,14 @@ jobs:
           cache: npm
       - name: Install project
         run: npm ci
-      - name: Build project
-        run: npm run build
       - name: Check formatting
         run: npm run format:check
       - name: Run lint checks
         run: npm run lint
       - name: Run type checks
         run: npm run typecheck
+      - name: Build project
+        run: npm run build
       - name: Run tests
         run: npm run test
       - name: Check test coverage
