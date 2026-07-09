@@ -10,8 +10,8 @@
     "prebuild": "node -e \"require('fs').rmSync('lib', { recursive: true, force: true }); require('fs').mkdirSync('lib', { recursive: true });\"",
     "build": "tsc",
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .ts --reporter=lcov npm test",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "mocha test/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
