@@ -1,7 +1,7 @@
 {
   "name": "sdmx-rest",
   "engines": {
-    "node": ">=10"
+    "node": ">=22"
   },
   "description": "SDMX REST API client for JavaScript",
   "version": "2.20.0",
@@ -27,27 +27,7 @@
     "api"
   ],
   "author": "Xavier Sosnovsky <xso@sosna.ws>",
-  "contributors": [
-    {
-      "name": "Xavier Sosnovsky",
-      "email": null,
-      "url": "https://github.com/sosna",
-      "contributions": 116,
-      "additions": 5727,
-      "deletions": 3071,
-      "hireable": null
-    },
-    {
-      "name": "Leroy S.",
-      "email": null,
-      "url": "https://github.com/Tzaphkiel",
-      "contributions": 2,
-      "additions": 21,
-      "deletions": 1,
-      "hireable": null
-    }
-  ],
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/sosna/sdmx-rest4js/issues"
   },
