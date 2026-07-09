@@ -18,6 +18,7 @@ export default tseslint.config(
     rules: {
       // Keep the recommended baseline, but treat existing any-usage as migration work.
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-require-imports': 'warn',
     },
   },
   {

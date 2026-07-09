@@ -19,9 +19,9 @@ import { UrlGenerator } from './utils/url-generator';
 import { ApiVersion, ApiResources } from './utils/api-version';
 import * as SdmxPatterns from './utils/sdmx-patterns';
 import { polyfill } from 'es6-promise';
-import 'isomorphic-fetch';
 
 polyfill();
+const fetch = require('isomorphic-fetch');
 
 const userAgent = 'sdmx-rest4js (https://github.com/sosna/sdmx-rest4js)';
 
