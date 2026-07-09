@@ -12,6 +12,8 @@
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .ts --reporter=lcov npm test",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint:fix": "eslint --fix \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "mocha test/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -51,18 +53,22 @@
   },
   "homepage": "https://github.com/sosna/sdmx-rest4js#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/chai": "^4.3.20",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.10",
     "@types/node": "^26.1.0",
     "chai": "4.3.6",
     "chai-as-promised": "7.1.1",
+    "eslint": "^10.6.0",
+    "globals": "^17.7.0",
     "mocha": "11.7.6",
     "nock": "13.2.8",
     "nyc": "18.0.0",
     "prettier": "^3.9.4",
     "ts-node": "^10.9.2",
-    "typescript": "~5.9.0"
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.63.0"
   },
   "overrides": {
     "js-yaml": "4.3.0",
