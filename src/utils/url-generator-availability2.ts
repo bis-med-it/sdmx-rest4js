@@ -32,10 +32,7 @@ const handleQueryParams = (q: any): string => {
   return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
 };
 
-const createShortAvailabilityQuery = (
-  q: any,
-  s: any,
-): string => {
+const createShortAvailabilityQuery = (q: any, s: any): string => {
   validateDataForV2(q, s);
   let u = createEntryPoint(s);
   u += 'availability';
@@ -44,10 +41,7 @@ const createShortAvailabilityQuery = (
   return u;
 };
 
-const createAvailabilityQuery = (
-  q: any,
-  s: any,
-): string => {
+const createAvailabilityQuery = (q: any, s: any): string => {
   validateDataForV2(q, s);
   let url = createEntryPoint(s);
   const fc = parseContext(q.context);
