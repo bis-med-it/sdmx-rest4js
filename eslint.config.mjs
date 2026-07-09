@@ -16,8 +16,8 @@ export default tseslint.config(
       },
     },
     rules: {
-      // Keep library code strict; only relax migration-heavy rules.
-      '@typescript-eslint/no-explicit-any': 'off',
+      // Keep library code strict; phase out broad any-typing incrementally.
+      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
