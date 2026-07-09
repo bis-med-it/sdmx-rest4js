@@ -59,5 +59,22 @@ jobs:
       - name: Install project
         run: npm ci
       - name: Check test coverage
+        id: coverage_check
+        continue-on-error: true
         run: npm run coverage
+      - name: Print coverage summary
+        if: always()
+        run: npx nyc report --reporter=text-summary --reporter=text --reporter=lcov
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-ubuntu-node22
+          path: |
+            coverage/**
+            .nyc_output/**
+          if-no-files-found: warn
+      - name: Fail if coverage threshold not met
+        if: steps.coverage_check.outcome == 'failure'
+        run: exit 1
       
