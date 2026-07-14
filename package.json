@@ -1,17 +1,21 @@
 {
   "name": "sdmx-rest",
   "engines": {
-    "node": ">=10"
+    "node": ">=22"
   },
   "description": "SDMX REST API client for JavaScript",
   "version": "2.20.0",
   "main": "./lib/index.js",
   "scripts": {
-    "prebuild": "rm -rf lib && mkdir lib",
+    "prebuild": "node -e \"require('fs').rmSync('lib', { recursive: true, force: true }); require('fs').mkdirSync('lib', { recursive: true });\"",
     "build": "tsc",
     "coverage": "nyc --check-coverage --statements 100 --branches 100 --functions 100 --lines 100 --extension .ts --reporter=lcov npm test",
-    "test": "mocha test/**/*.test.ts",
-    "lint": "tsc --noEmit"
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint:fix": "eslint --fix \"src/**/*.ts\" \"test/**/*.ts\"",
+    "test": "mocha \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -23,43 +27,28 @@
     "api"
   ],
   "author": "Xavier Sosnovsky <xso@sosna.ws>",
-  "contributors": [
-    {
-      "name": "Xavier Sosnovsky",
-      "email": null,
-      "url": "https://github.com/sosna",
-      "contributions": 116,
-      "additions": 5727,
-      "deletions": 3071,
-      "hireable": null
-    },
-    {
-      "name": "Leroy S.",
-      "email": null,
-      "url": "https://github.com/Tzaphkiel",
-      "contributions": 2,
-      "additions": 21,
-      "deletions": 1,
-      "hireable": null
-    }
-  ],
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/sosna/sdmx-rest4js/issues"
   },
   "homepage": "https://github.com/sosna/sdmx-rest4js#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/chai": "^4.3.20",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.10",
     "@types/node": "^26.1.0",
     "chai": "4.3.6",
     "chai-as-promised": "7.1.1",
+    "eslint": "^10.6.0",
+    "globals": "^17.7.0",
     "mocha": "11.7.6",
     "nock": "13.2.8",
     "nyc": "18.0.0",
+    "prettier": "^3.9.4",
     "ts-node": "^10.9.2",
-    "typescript": "~5.9.0"
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.63.0"
   },
   "overrides": {
     "js-yaml": "4.3.0",

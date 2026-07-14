@@ -4,7 +4,6 @@ import { SchemaContext } from '../../src/schema/schema-context';
 chai.should();
 
 describe('Schema context', () => {
-
   const expectedContexts = [
     'datastructure',
     'metadatastructure',

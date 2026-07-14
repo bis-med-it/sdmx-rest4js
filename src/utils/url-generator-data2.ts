@@ -69,7 +69,6 @@ const createShortDataQuery = (q: any, s: any): string => {
 };
 
 class Handler {
-
   handle(q: any, s: any, skip?: boolean): string {
     const api = ApiNumber[getKeyFromVersion(s.api)];
     if (api < ApiNumber.v2_0_0) {

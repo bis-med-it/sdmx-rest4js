@@ -6,7 +6,6 @@ import { DataQuery } from '../../src/data/data-query';
 const should = chai.should();
 
 describe('Data queries', () => {
-
   it('has the expected properties', () => {
     const q = DataQuery.from({ flow: 'ICP' });
     q.should.be.an('object');
@@ -40,7 +39,6 @@ describe('Data queries', () => {
   });
 
   describe('when setting the flow', () => {
-
     it('throws an exception when the flow is not set', () => {
       let test = () => DataQuery.from({ flow: ' ' });
       should.Throw(test, Error, 'Not a valid data query');
@@ -56,7 +54,6 @@ describe('Data queries', () => {
   });
 
   describe('when setting the key', () => {
-
     it('a string representing the key can be used', () => {
       const flow = 'EXR';
       const key = '.CHF+NOK.EUR..2';
@@ -66,39 +63,21 @@ describe('Data queries', () => {
     });
 
     it('an array of arrays can be used to build the key', () => {
-      const values = [
-        ['D'],
-        ['NOK', 'RUB', 'CHF'],
-        ['EUR'],
-        [],
-        ['A'],
-      ];
+      const values = [['D'], ['NOK', 'RUB', 'CHF'], ['EUR'], [], ['A']];
       const query = DataQuery.from({ flow: 'EXR', key: values });
       query.should.have.property('flow').that.equals('EXR');
       query.should.have.property('key').that.equals('D.NOK+RUB+CHF.EUR..A');
     });
 
     it('a mixed array can be used to build the key', () => {
-      const values = [
-        'D',
-        ['NOK', 'RUB', 'CHF'],
-        '',
-        'SP00',
-        undefined,
-      ];
+      const values = ['D', ['NOK', 'RUB', 'CHF'], '', 'SP00', undefined];
       const query = DataQuery.from({ flow: 'EXR', key: values });
       query.should.have.property('flow').that.equals('EXR');
       query.should.have.property('key').that.equals('D.NOK+RUB+CHF..SP00.');
     });
 
     it('an exotic array can be used to build the key', () => {
-      const values = [
-        '',
-        ['NOK', 'RUB', 'CHF'],
-        ['EUR'],
-        undefined,
-        null,
-      ];
+      const values = ['', ['NOK', 'RUB', 'CHF'], ['EUR'], undefined, null];
       const query = DataQuery.from({ flow: 'EXR', key: values });
       query.should.have.property('flow').that.equals('EXR');
       query.should.have.property('key').that.equals('.NOK+RUB+CHF.EUR..');
@@ -111,7 +90,6 @@ describe('Data queries', () => {
   });
 
   describe('when setting the provider', () => {
-
     it('a string representing the provider can be used', () => {
       const flow = 'EXR';
       let provider = 'ECB';
@@ -142,13 +120,13 @@ describe('Data queries', () => {
     });
 
     it('throws an exception if the value for provider is invalid', () => {
-      const test = () => DataQuery.from({ flow: 'EXR', provider: 'SDMX,ECB,2.0' });
+      const test = () =>
+        DataQuery.from({ flow: 'EXR', provider: 'SDMX,ECB,2.0' });
       should.Throw(test, Error, 'Not a valid data query');
     });
   });
 
   describe('when setting the start and end periods', () => {
-
     it('a string representing years can be passed', () => {
       const flow = 'EXR';
       const start = '2000';
@@ -221,7 +199,6 @@ describe('Data queries', () => {
   });
 
   describe('when setting the updatedAfter timestamp', () => {
-
     it('a string representing a timestamp can be passed', () => {
       const flow = 'EXR';
       const last = '2016-03-04T09:57:00Z';
@@ -240,12 +217,15 @@ describe('Data queries', () => {
   });
 
   describe('when setting the first and last number of observations', () => {
-
     it('integers representing the desired number of obs can be passed', () => {
       const flow = 'EXR';
       const firstN = 1;
       const lastN = 3;
-      const q = DataQuery.from({ flow: flow, firstNObs: firstN, lastNObs: lastN });
+      const q = DataQuery.from({
+        flow: flow,
+        firstNObs: firstN,
+        lastNObs: lastN,
+      });
       q.should.have.property('flow').that.equals(flow);
       q.should.have.property('firstNObs').that.equals(firstN);
       q.should.have.property('lastNObs').that.equals(lastN);
@@ -269,7 +249,6 @@ describe('Data queries', () => {
   });
 
   describe('when setting the dimension at observation level', () => {
-
     it('a string representing the dimension at the obs level can be passed', () => {
       const flow = 'ECB,EXR,latest';
       const dim = 'CURRENCY';
@@ -279,13 +258,13 @@ describe('Data queries', () => {
     });
 
     it('throws an exception if value for obs dimension is invalid', () => {
-      const test = () => DataQuery.from({ flow: 'EXR', obsDimension: '*&^%$#@!)' });
+      const test = () =>
+        DataQuery.from({ flow: 'EXR', obsDimension: '*&^%$#@!)' });
       should.Throw(test, Error, 'Not a valid data query');
     });
   });
 
   describe('when setting the desired level of detail', () => {
-
     it('a string representing the desired level of detail can be passed', () => {
       const flow = 'ECB,EXR,1.0';
       const detail = DataDetail.NO_DATA;
@@ -301,7 +280,6 @@ describe('Data queries', () => {
   });
 
   describe('when setting whether historical data should be returned', () => {
-
     it('a boolean can be passed', () => {
       const flow = 'ECB,EXR';
       const q = DataQuery.from({ flow: flow, history: true });

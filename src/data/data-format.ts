@@ -1,6 +1,5 @@
 // Specifies the mime types of the various SDMX formats for data.
 const formats = {
-
   // The SDMX-ML 2.1 Generic data format.
   SDMX_ML_2_1_GENERIC: 'application/vnd.sdmx.genericdata+xml;version=2.1',
 
@@ -63,8 +62,7 @@ const formats = {
   SDMX_ML_GENERIC: 'application/vnd.sdmx.genericdata+xml;version=2.1',
 
   // Shortcut for the latest version of SDMX-ML Structure Specific
-  SDMX_ML_STRUCTURE_SPECIFIC:
-    'application/vnd.sdmx.data+xml;version=3.0.0',
+  SDMX_ML_STRUCTURE_SPECIFIC: 'application/vnd.sdmx.data+xml;version=3.0.0',
 };
 
 export const DataFormat = Object.freeze(formats);

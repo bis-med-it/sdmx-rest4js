@@ -8,12 +8,10 @@ const NCNameIDTypeAlone = new RegExp(`^${NCNameIDType.source}$`);
 
 // An ID, potentially followed by a dot and other IDs
 const NestedNCNameIDType = new RegExp(
-  `${NCNameIDType.source}(\\.${NCNameIDType.source})*`
+  `${NCNameIDType.source}(\\.${NCNameIDType.source})*`,
 );
 
-const NestedNCNameIDTypeAlone = new RegExp(
-  `^${NestedNCNameIDType.source}$`
-);
+const NestedNCNameIDTypeAlone = new RegExp(`^${NestedNCNameIDType.source}$`);
 
 // Letters, numbers, _, @, $ or -
 const IDType = /[A-Za-z0-9_@$-]+/;
@@ -27,24 +25,24 @@ const VersionNumber = /[0-9]+(\.[0-9]+)*/;
 // potentially followed by a pre-release and a build part
 const SemVer = new RegExp(
   '\\+' +
-  '|~' +
-  '|(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
-  '\\.(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
-  '\\.?(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
-  '(?:-((?:0|[1-9]\\d*' +
-  '|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*' +
-  '|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?' +
-  '(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?'
+    '|~' +
+    '|(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
+    '\\.(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
+    '\\.?(0|[1-9]\\d*[\\+~]?|[\\+~]?)' +
+    '(?:-((?:0|[1-9]\\d*' +
+    '|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*' +
+    '|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?' +
+    '(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?',
 );
 
 // The string all, the string latest, a version number or semver
 const VersionType = new RegExp(
-  `(all|latest|${VersionNumber.source}|${SemVer.source})`
+  `(all|latest|${VersionNumber.source}|${SemVer.source})`,
 );
 
 // The string latest, a version number or semver
 const SingleVersionType = new RegExp(
-  `(latest|${VersionNumber.source}|${SemVer.source})`
+  `(latest|${VersionNumber.source}|${SemVer.source})`,
 );
 
 const SingleVersionTypeAlone = new RegExp(`^${SingleVersionType.source}$`);
@@ -62,59 +60,59 @@ const NestedIDTypeAlone = new RegExp(`^${NestedIDType.source}$`);
 // dot and repeating the same pattern
 const SeriesKeyType = new RegExp(
   `^(${IDType.source}([+]${IDType.source})*)?` +
-  `([.](${IDType.source}([+]${IDType.source})*)?)*$`
+    `([.](${IDType.source}([+]${IDType.source})*)?)*$`,
 );
 
 // One star or a dimension value, potentially followed by a dot and repeating
 // the same pattern
 const Sdmx3SeriesKeyType = new RegExp(
-  `^(\\*|${IDType.source})?([.](\\*|${IDType.source})?)*$`
+  `^(\\*|${IDType.source})?([.](\\*|${IDType.source})?)*$`,
 );
 
 const FlowRefType = new RegExp(
   `^(${IDType.source}` +
-  `|(${NestedNCNameIDType.source}` +
-  `,${IDType.source}` +
-  `(,(latest|(${VersionNumber.source})))?))$`
+    `|(${NestedNCNameIDType.source}` +
+    `,${IDType.source}` +
+    `(,(latest|(${VersionNumber.source})))?))$`,
 );
 
 // May start with the agency owning the scheme, followed by the id of the
 // provider
 const ProviderRefType = new RegExp(
-  `(${NestedNCNameIDType.source},)?${IDType.source}`
+  `(${NestedNCNameIDType.source},)?${IDType.source}`,
 );
 
 const MultipleProviderRefType = new RegExp(
-  `^(${ProviderRefType.source}([+]${ProviderRefType.source})*)$`
+  `^(${ProviderRefType.source}([+]${ProviderRefType.source})*)$`,
 );
 
 const Sdmx_3_0_all = /\*/;
 
 const MultipleAgencies = new RegExp(
   `(${Sdmx_3_0_all.source}` +
-  `|${NestedNCNameIDType.source}([+,]${NestedNCNameIDType.source})*)`
+    `|${NestedNCNameIDType.source}([+,]${NestedNCNameIDType.source})*)`,
 );
 
 const MultipleAgenciesRefType = new RegExp(`^${MultipleAgencies.source}$`);
 
 const MultipleIDs = new RegExp(
-  `(${Sdmx_3_0_all.source}|${IDType.source}([+,]${IDType.source})*)`
+  `(${Sdmx_3_0_all.source}|${IDType.source}([+,]${IDType.source})*)`,
 );
 
 const MultipleIDType = new RegExp(`^${MultipleIDs.source}$`);
 
 const MultipleNestedIDType = new RegExp(
   `^(${Sdmx_3_0_all.source}` +
-  `|${NestedIDType.source}([+]${NestedIDType.source})*)$`
+    `|${NestedIDType.source}([+]${NestedIDType.source})*)$`,
 );
 
 const MultipleVersions = new RegExp(
   `(${Sdmx_3_0_all.source}` +
-  `|${VersionType.source}([,]${VersionType.source})*)`
+    `|${VersionType.source}([,]${VersionType.source})*)`,
 );
 
 const MultipleVersionsType = new RegExp(
-  `^${VersionType.source}([+,]${VersionType.source})*$`
+  `^${VersionType.source}([+,]${VersionType.source})*$`,
 );
 
 const ReportingPeriodType = /^\d{4}-([ASTQ]\d{1}|[MW]\d{2}|[D]\d{3})$/;
@@ -122,7 +120,7 @@ const ReportingPeriodType = /^\d{4}-([ASTQ]\d{1}|[MW]\d{2}|[D]\d{3})$/;
 const ContextType = /(datastructure|dataflow|provisionagreement)/;
 
 const MultipleContextType = new RegExp(
-  `(${Sdmx_3_0_all.source}|${ContextType.source}([+,]${ContextType.source})*)`
+  `(${Sdmx_3_0_all.source}|${ContextType.source}([+,]${ContextType.source})*)`,
 );
 
 // The context, then the separator between context & agency, then one or more
@@ -130,9 +128,9 @@ const MultipleContextType = new RegExp(
 // IDs, then one or more versions between parentheses
 const ContextRefType = new RegExp(
   `^(${MultipleContextType.source}` +
-  `=${MultipleAgencies.source}` +
-  `:${MultipleIDs.source}` +
-  `\\(${MultipleVersions.source}\\))$`
+    `=${MultipleAgencies.source}` +
+    `:${MultipleIDs.source}` +
+    `\\(${MultipleVersions.source}\\))$`,
 );
 
 const Operators = /(eq|ne|lt|le|gt|ge|co|nc|sw|ew)/;
@@ -141,7 +139,7 @@ const FilterValue = new RegExp(`((${Operators.source}:)?${IDType.source})`);
 
 const FiltersType = new RegExp(
   `^(${NCNameIDType.source}` +
-  `=${FilterValue.source}([+,]${FilterValue.source})*)$`
+    `=${FilterValue.source}([+,]${FilterValue.source})*)$`,
 );
 
 export {

@@ -8,7 +8,6 @@ import { SchemaFormat } from '../../src/schema/schema-format';
 const should = chai.should();
 
 describe('Service', () => {
-
   it('has the expected properties', () => {
     const service = Service.from({ url: 'http://test.com' });
     service.should.be.an('object');
@@ -36,7 +35,6 @@ describe('Service', () => {
   });
 
   context('when passing an object', () => {
-
     it('allows setting a provider', () => {
       const id = 'TEST';
       const name = 'Test provider';
@@ -73,7 +71,6 @@ describe('Service', () => {
   });
 
   context('when passing an string', () => {
-
     it('offers access to predefined services', () => {
       const i = [
         'ECB',
@@ -87,13 +84,22 @@ describe('Service', () => {
         'UNICEF',
       ];
       for (const s of i) (Service as any)[s].should.be.an('object');
-      for (const s of i) (Service as any)[s].should.have.property('id').that.is.not.undefined;
-      for (const s of i) (Service as any)[s].should.have.property('name').that.is.not.undefined;
-      for (const s of i) (Service as any)[s].should.have.property('url').that.is.not.undefined;
-      for (const s of i) (Service as any)[s].should.have.property('api').that.is.not.undefined;
-      for (const s of i) (Service as any)[s].should.have.property('url').that.is.not.undefined;
-      for (const s of i) if (s.indexOf('_S') === -1) (Service as any)[s].url.should.contain('http');
-      for (const s of i) if (s.indexOf('_S') > -1) (Service as any)[s].url.should.contain('https');
+      for (const s of i)
+        (Service as any)[s].should.have.property('id').that.is.not.undefined;
+      for (const s of i)
+        (Service as any)[s].should.have.property('name').that.is.not.undefined;
+      for (const s of i)
+        (Service as any)[s].should.have.property('url').that.is.not.undefined;
+      for (const s of i)
+        (Service as any)[s].should.have.property('api').that.is.not.undefined;
+      for (const s of i)
+        (Service as any)[s].should.have.property('url').that.is.not.undefined;
+      for (const s of i)
+        if (s.indexOf('_S') === -1)
+          (Service as any)[s].url.should.contain('http');
+      for (const s of i)
+        if (s.indexOf('_S') > -1)
+          (Service as any)[s].url.should.contain('https');
     });
 
     it('offers a default data format for some predefined services', () => {
@@ -103,7 +109,9 @@ describe('Service', () => {
 
     it('offers a default metadata format for some predefined services', () => {
       const format = MetadataFormat.SDMX_ML_2_1_STRUCTURE;
-      Service['ECB'].should.have.property('structureFormat').that.equals(format);
+      Service['ECB'].should.have
+        .property('structureFormat')
+        .that.equals(format);
     });
 
     it('offers a default schema format for some predefined services', () => {
@@ -127,7 +135,6 @@ describe('Service', () => {
 });
 
 describe('Services', () => {
-
   it('list some services', () => {
     services.should.be.an('array');
     services.should.have.property('length').that.is.gte(5);

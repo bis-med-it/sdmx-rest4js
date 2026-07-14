@@ -7,7 +7,6 @@ import { AvailabilityQuery2 } from '../../src/avail/availability-query2';
 const should = chai.should();
 
 describe('SDMX 3.0 availability queries', () => {
-
   it('has the expected properties', () => {
     const q = AvailabilityQuery2.from({});
     q.should.be.an('object');
@@ -49,7 +48,6 @@ describe('SDMX 3.0 availability queries', () => {
   });
 
   describe('when setting the context', () => {
-
     it('throws an exception when the context is invalid', () => {
       const test = () => AvailabilityQuery2.from({ context: '1%' });
       should.Throw(test, Error, 'Not a valid availability query');
@@ -83,34 +81,48 @@ describe('SDMX 3.0 availability queries', () => {
   });
 
   describe('when setting the key', () => {
-
     it('a string representing the key can be used', () => {
       const key = 'M.CHF.EUR.SP00.A';
-      const q = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', key: key });
+      const q = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        key: key,
+      });
       q.should.have.property('key').that.equals(key);
     });
 
     it('a string with wildcarded values can be used', () => {
       const key = 'M.*.EUR.SP00.*';
-      const q = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', key: key });
+      const q = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        key: key,
+      });
       q.should.have.property('key').that.equals(key);
     });
 
     it('a string with multiple keys can be used', () => {
       const key = 'M.CHF.EUR.SP00.A,D.CHF.EUR.SP00.A';
-      const q = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', key: key });
+      const q = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        key: key,
+      });
       q.should.have.property('key').that.equals(key);
     });
 
     it('throws an exception if the value for the key is invalid', () => {
       const test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', key: 'M.CHF+NOK.EUR..' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          key: 'M.CHF+NOK.EUR..',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
 
     it('throws an exception if one of the values for the key is invalid', () => {
       const test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', key: 'M.CHF.EUR,M.USD+GBP.EUR' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          key: 'M.CHF.EUR,M.USD+GBP.EUR',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });
@@ -118,57 +130,82 @@ describe('SDMX 3.0 availability queries', () => {
   describe('when setting the component ID', () => {
     it('a string representing the component id can be passed', () => {
       const cp = 'A';
-      const query = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', component: cp });
+      const query = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        component: cp,
+      });
       query.should.have.property('component').that.equals(cp);
     });
 
     it('a string representing multilpe component ids can be passed', () => {
       const cp = 'A,B';
-      const query = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', component: cp });
+      const query = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        component: cp,
+      });
       query.should.have.property('component').that.equals(cp);
     });
 
     it('throws an exception if the component id is invalid', () => {
       let test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', component: ' ' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          component: ' ',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
 
       test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', component: 'A*' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          component: 'A*',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
 
     it('throws an exception one of the component ids is invalid', () => {
       const test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', component: 'A,Q*' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          component: 'A,Q*',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });
 
   describe('when setting the updatedAfter timestamp', () => {
-
     it('a string representing a timestamp can be passed', () => {
       const last = '2016-03-04T09:57:00Z';
-      const q = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', updatedAfter: last });
+      const q = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        updatedAfter: last,
+      });
       q.should.have.property('updatedAfter').that.equals(last);
     });
 
     it('throws an exception if the value for updatedAfter is invalid', () => {
       let test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', updatedAfter: 'now' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          updatedAfter: 'now',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
 
       test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', updatedAfter: '2000-Q1' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          updatedAfter: '2000-Q1',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });
 
   describe('when setting the filters to be applied', () => {
-
     it('a string representing one filter can be passed', () => {
       const f = 'FREQ=A';
-      const q = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', filters: f });
+      const q = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        filters: f,
+      });
       q.should.have.property('filters').that.has.lengthOf(1);
       const r = q.filters[0];
       r.should.equal(f);
@@ -177,7 +214,10 @@ describe('SDMX 3.0 availability queries', () => {
     it('an array representing multiple filters can be passed', () => {
       const f1 = 'FREQ=A';
       const f2 = 'TIME_PERIOD=ge:2020-01+le:2020-12,2022-08';
-      const q = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', filters: [f1, f2] });
+      const q = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        filters: [f1, f2],
+      });
       q.should.have.property('filters').that.has.lengthOf(2);
       const r1 = q.filters[0];
       r1.should.equal(f1);
@@ -187,13 +227,19 @@ describe('SDMX 3.0 availability queries', () => {
 
     it('throws an exception if the filter is invalid', () => {
       const test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', filters: 'FREQ=badop:UNIT' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          filters: 'FREQ=badop:UNIT',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
 
     it('throws an exception if one of the filters is invalid', () => {
       const test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', filters: ['FREQ=A', '$1'] });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          filters: ['FREQ=A', '$1'],
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });
@@ -201,13 +247,19 @@ describe('SDMX 3.0 availability queries', () => {
   describe('when setting the processing mode', () => {
     it('a string representing the amount of details can be passed', () => {
       const mode = AvailabilityMode.AVAILABLE;
-      const query = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', mode: mode });
+      const query = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        mode: mode,
+      });
       query.should.have.property('mode').that.equals(mode);
     });
 
     it('throws an exception if the value for mode is unknown', () => {
       const test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', mode: 'test' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          mode: 'test',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });
@@ -215,13 +267,19 @@ describe('SDMX 3.0 availability queries', () => {
   describe('when setting the references', () => {
     it('a string representing the references to be resolved can be passed', () => {
       const refs = AvailabilityReferences.CONCEPT_SCHEME;
-      const query = AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', references: refs });
+      const query = AvailabilityQuery2.from({
+        context: 'dataflow=BIS:CBS(1.0)',
+        references: refs,
+      });
       query.should.have.property('references').that.equals(refs);
     });
 
     it('throws an exception if the value for references is unknown', () => {
       const test = () =>
-        AvailabilityQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', references: 'ref' });
+        AvailabilityQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          references: 'ref',
+        });
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });

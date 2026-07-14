@@ -32,11 +32,7 @@ const handleQueryParams = (q: any): string => {
   return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
 };
 
-const createShortAvailabilityQuery = (
-  q: any,
-  s: any,
-  api_number: number
-): string => {
+const createShortAvailabilityQuery = (q: any, s: any): string => {
   validateDataForV2(q, s);
   let u = createEntryPoint(s);
   u += 'availability';
@@ -45,11 +41,7 @@ const createShortAvailabilityQuery = (
   return u;
 };
 
-const createAvailabilityQuery = (
-  q: any,
-  s: any,
-  api_number: number
-): string => {
+const createAvailabilityQuery = (q: any, s: any): string => {
   validateDataForV2(q, s);
   let url = createEntryPoint(s);
   const fc = parseContext(q.context);
@@ -68,15 +60,14 @@ const createAvailabilityQuery = (
 };
 
 class Handler {
-
   handle(q: any, s: any, skip?: boolean): string {
     const api = ApiNumber[getKeyFromVersion(s.api)];
     if (api < ApiNumber.v2_0_0) {
       throw Error(`SDMX 3.0 queries not allowed in ${s.api}`);
     } else if (skip) {
-      return createShortAvailabilityQuery(q, s, api);
+      return createShortAvailabilityQuery(q, s);
     } else {
-      return createAvailabilityQuery(q, s, api);
+      return createAvailabilityQuery(q, s);
     }
   }
 }

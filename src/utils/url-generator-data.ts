@@ -133,7 +133,6 @@ const createShortDataQuery = (q: any, s: any, a: number): string => {
 };
 
 class Handler {
-
   handle(q: any, s: any, skip?: boolean): string {
     const api = ApiNumber[getKeyFromVersion(s.api)];
     checkMultipleItems(q.provider, s, 'providers', api);

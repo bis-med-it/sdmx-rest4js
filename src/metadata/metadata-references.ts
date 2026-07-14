@@ -8,7 +8,6 @@ import { MetadataType } from './metadata-type';
 // (for example, the dataflows that use the data structure definition matching
 // the query)
 const special = {
-
   // No references will be returned
   NONE: 'none',
 
@@ -32,12 +31,7 @@ const special = {
   ALL: 'all',
 };
 
-const excluded = [
-  'structure',
-  'actualconstraint',
-  'allowedconstraint',
-  '*',
-];
+const excluded = ['structure', 'actualconstraint', 'allowedconstraint', '*'];
 
 // All the predefined SDMX types are valid references, except for the 'catch
 // all' `structure`

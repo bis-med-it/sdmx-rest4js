@@ -5,13 +5,7 @@ import { DataDetail } from '../../src/data/data-detail';
 chai.should();
 
 describe('Data detail', () => {
-
-  const expectedDetails = [
-    'full',
-    'dataonly',
-    'serieskeysonly',
-    'nodata',
-  ];
+  const expectedDetails = ['full', 'dataonly', 'serieskeysonly', 'nodata'];
 
   it('contains all the expected details and only those', () => {
     let count = 0;

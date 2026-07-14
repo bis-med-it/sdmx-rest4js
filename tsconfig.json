@@ -4,6 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "lib": ["ES2019", "DOM"],
+    "rootDir": "src",
     "outDir": "lib",
     "strict": true,
     "esModuleInterop": true,

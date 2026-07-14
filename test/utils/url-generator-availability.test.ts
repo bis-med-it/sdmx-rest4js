@@ -8,11 +8,11 @@ import { UrlGenerator } from '../../src/utils/url-generator';
 const should = chai.should();
 
 describe('URL Generator for availability queries', () => {
-
   it('generates a URL for a full availability query', () => {
-    const expected = 'http://test.com/availableconstraint/EXR/A..EUR.SP00.A/ECB/FREQ?'
-      + 'mode=available&references=none'
-      + '&startPeriod=2010&endPeriod=2015&updatedAfter=2016-03-01T00:00:00Z';
+    const expected =
+      'http://test.com/availableconstraint/EXR/A..EUR.SP00.A/ECB/FREQ?' +
+      'mode=available&references=none' +
+      '&startPeriod=2010&endPeriod=2015&updatedAfter=2016-03-01T00:00:00Z';
     const query = AvailabilityQuery.from({
       flow: 'EXR',
       key: 'A..EUR.SP00.A',
@@ -24,15 +24,19 @@ describe('URL Generator for availability queries', () => {
       mode: 'available',
       references: 'none',
     });
-    const service = Service.from({ url: 'http://test.com', api: ApiVersion.v1_5_0 });
+    const service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v1_5_0,
+    });
     const url = new UrlGenerator().getUrl(query, service);
     url.should.equal(expected);
   });
 
   it('generates a URL for a full availability query (2.0.0)', () => {
-    const expected = 'http://test.com/availability/dataflow/*/EXR/*/A..EUR.SP00.A/FREQ?'
-      + 'mode=available&references=none'
-      + '&updatedAfter=2016-03-01T00:00:00Z';
+    const expected =
+      'http://test.com/availability/dataflow/*/EXR/*/A..EUR.SP00.A/FREQ?' +
+      'mode=available&references=none' +
+      '&updatedAfter=2016-03-01T00:00:00Z';
     const query = AvailabilityQuery.from({
       flow: 'EXR',
       key: 'A..EUR.SP00.A',
@@ -41,34 +45,49 @@ describe('URL Generator for availability queries', () => {
       mode: 'available',
       references: 'none',
     });
-    const service = Service.from({ url: 'http://test.com', api: ApiVersion.v2_0_0 });
+    const service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v2_0_0,
+    });
     const url = new UrlGenerator().getUrl(query, service);
     url.should.equal(expected);
   });
 
   it('generates a URL for a partial availability query', () => {
-    const expected = 'http://test.com/availableconstraint/EXR/A..EUR.SP00.A/all/all?'
-      + 'mode=exact&references=none';
+    const expected =
+      'http://test.com/availableconstraint/EXR/A..EUR.SP00.A/all/all?' +
+      'mode=exact&references=none';
     const query = AvailabilityQuery.from({ flow: 'EXR', key: 'A..EUR.SP00.A' });
-    const service = Service.from({ url: 'http://test.com', api: ApiVersion.v1_5_0 });
+    const service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v1_5_0,
+    });
     const url = new UrlGenerator().getUrl(query, service);
     url.should.equal(expected);
   });
 
   it('generates a URL for a partial availability query (2.0.0)', () => {
-    const expected = 'http://test.com/availability/dataflow/*/EXR/*/*/*?'
-      + 'mode=exact&references=none';
+    const expected =
+      'http://test.com/availability/dataflow/*/EXR/*/*/*?' +
+      'mode=exact&references=none';
     const query = AvailabilityQuery.from({ flow: 'EXR' });
-    const service = Service.from({ url: 'http://test.com', api: ApiVersion.v2_0_0 });
+    const service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v2_0_0,
+    });
     const url = new UrlGenerator().getUrl(query, service);
     url.should.equal(expected);
   });
 
   it('supports minimal query if proper query class is used', () => {
-    const expected = 'http://test.com/availableconstraint/EXR/all/all/all?'
-      + 'mode=exact&references=none';
+    const expected =
+      'http://test.com/availableconstraint/EXR/all/all/all?' +
+      'mode=exact&references=none';
     const query = AvailabilityQuery.from({ flow: 'EXR' });
-    const service = Service.from({ url: 'http://test.com', api: ApiVersion.v1_5_0 });
+    const service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v1_5_0,
+    });
     const url = new UrlGenerator().getUrl(query, service);
     url.should.equal(expected);
   });
@@ -145,8 +164,8 @@ describe('URL Generator for availability queries', () => {
   });
 
   it('offers to skip defaults but adds them when needed (mode, 2.0.0)', () => {
-    const expected = 'http://test.com/availability/dataflow/*/EXR'
-      + '?mode=available';
+    const expected =
+      'http://test.com/availability/dataflow/*/EXR' + '?mode=available';
     const query = AvailabilityQuery.from({ flow: 'EXR', mode: 'available' });
     const service = Service.from({ url: 'http://test.com', api: 'v2.0.0' });
     const url = new UrlGenerator().getUrl(query, service, true);
@@ -154,17 +173,24 @@ describe('URL Generator for availability queries', () => {
   });
 
   it('offers to skip defaults but adds them when needed (refs)', () => {
-    const expected = 'http://test.com/availableconstraint/EXR?references=codelist';
-    const query = AvailabilityQuery.from({ flow: 'EXR', references: 'codelist' });
+    const expected =
+      'http://test.com/availableconstraint/EXR?references=codelist';
+    const query = AvailabilityQuery.from({
+      flow: 'EXR',
+      references: 'codelist',
+    });
     const service = Service.from({ url: 'http://test.com', api: 'v1.5.0' });
     const url = new UrlGenerator().getUrl(query, service, true);
     url.should.equal(expected);
   });
 
   it('offers to skip defaults but adds them when needed (refs, 2.0.0)', () => {
-    const expected = 'http://test.com/availability/dataflow/*/EXR'
-      + '?references=codelist';
-    const query = AvailabilityQuery.from({ flow: 'EXR', references: 'codelist' });
+    const expected =
+      'http://test.com/availability/dataflow/*/EXR' + '?references=codelist';
+    const query = AvailabilityQuery.from({
+      flow: 'EXR',
+      references: 'codelist',
+    });
     const service = Service.from({ url: 'http://test.com', api: 'v2.0.0' });
     const url = new UrlGenerator().getUrl(query, service, true);
     url.should.equal(expected);
@@ -187,17 +213,23 @@ describe('URL Generator for availability queries', () => {
   });
 
   it('offers to skip defaults but adds them when needed (start & end)', () => {
-    const expected = 'http://test.com/availableconstraint/EXR?startPeriod=2007&'
-      + 'endPeriod=2073';
-    const query = AvailabilityQuery.from({ flow: 'EXR', start: '2007', end: '2073' });
+    const expected =
+      'http://test.com/availableconstraint/EXR?startPeriod=2007&' +
+      'endPeriod=2073';
+    const query = AvailabilityQuery.from({
+      flow: 'EXR',
+      start: '2007',
+      end: '2073',
+    });
     const service = Service.from({ url: 'http://test.com', api: 'v1.5.0' });
     const url = new UrlGenerator().getUrl(query, service, true);
     url.should.equal(expected);
   });
 
   it('offers to skip defaults but adds them when needed (upd)', () => {
-    const expected = 'http://test.com/availableconstraint/EXR?'
-      + 'updatedAfter=2016-03-01T00:00:00Z';
+    const expected =
+      'http://test.com/availableconstraint/EXR?' +
+      'updatedAfter=2016-03-01T00:00:00Z';
     const query = AvailabilityQuery.from({
       flow: 'EXR',
       updatedAfter: '2016-03-01T00:00:00Z',
@@ -208,8 +240,9 @@ describe('URL Generator for availability queries', () => {
   });
 
   it('offers to skip defaults but adds them when needed (upd, 2.0.0)', () => {
-    const expected = 'http://test.com/availability/dataflow/*/EXR?'
-      + 'updatedAfter=2016-03-01T00:00:00Z';
+    const expected =
+      'http://test.com/availability/dataflow/*/EXR?' +
+      'updatedAfter=2016-03-01T00:00:00Z';
     const query = AvailabilityQuery.from({
       flow: 'EXR',
       updatedAfter: '2016-03-01T00:00:00Z',
@@ -220,8 +253,9 @@ describe('URL Generator for availability queries', () => {
   });
 
   it('offers to skip defaults but adds them when needed (multi, 2.0.0)', () => {
-    const expected = 'http://test.com/availability/dataflow/*/EXR?'
-      + 'mode=available&updatedAfter=2016-03-01T00:00:00Z';
+    const expected =
+      'http://test.com/availability/dataflow/*/EXR?' +
+      'mode=available&updatedAfter=2016-03-01T00:00:00Z';
     const query = AvailabilityQuery.from({
       flow: 'EXR',
       updatedAfter: '2016-03-01T00:00:00Z',
@@ -234,7 +268,10 @@ describe('URL Generator for availability queries', () => {
 
   it('throws an error when using provider with 2.0.0', () => {
     let query = AvailabilityQuery.from({ flow: 'EXR', provider: 'ECB' });
-    let service = Service.from({ url: 'http://test.com', api: ApiVersion.v2_0_0 });
+    let service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v2_0_0,
+    });
     let test = () => new UrlGenerator().getUrl(query, service);
     should.Throw(test, Error, 'provider not allowed in v2.0.0');
 
@@ -246,7 +283,10 @@ describe('URL Generator for availability queries', () => {
 
   it('throws an error when using start with 2.0.0', () => {
     let query = AvailabilityQuery.from({ flow: 'EXR', start: '2007' });
-    let service = Service.from({ url: 'http://test.com', api: ApiVersion.v2_0_0 });
+    let service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v2_0_0,
+    });
     let test = () => new UrlGenerator().getUrl(query, service);
     should.Throw(test, Error, 'start not allowed in v2.0.0');
 
@@ -258,7 +298,10 @@ describe('URL Generator for availability queries', () => {
 
   it('throws an error when using end with 2.0.0', () => {
     let query = AvailabilityQuery.from({ flow: 'EXR', end: '2007' });
-    let service = Service.from({ url: 'http://test.com', api: ApiVersion.v2_0_0 });
+    let service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v2_0_0,
+    });
     let test = () => new UrlGenerator().getUrl(query, service);
     should.Throw(test, Error, 'end not allowed in v2.0.0');
 
@@ -273,7 +316,10 @@ describe('URL Generator for availability queries', () => {
       flow: 'ECB,EXR,1.42',
       key: 'A+M.CHF',
     });
-    let service = Service.from({ url: 'http://test.com', api: ApiVersion.v2_0_0 });
+    let service = Service.from({
+      url: 'http://test.com',
+      api: ApiVersion.v2_0_0,
+    });
     let test = () => new UrlGenerator().getUrl(query, service);
     should.Throw(test, Error, '+ not allowed in key in v2.0.0');
 

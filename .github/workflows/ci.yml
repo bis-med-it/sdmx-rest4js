@@ -1,0 +1,66 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: ['lts/-1', 'lts/*']
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v7
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Install project
+        run: npm ci
+      - name: Check formatting
+        run: npm run format:check
+      - name: Run lint checks
+        run: npm run lint
+      - name: Run type checks
+        run: npm run typecheck
+      - name: Build project
+        run: npm run build
+      - name: Run tests
+        run: npm run test
+      - name: Check test coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 'lts/*'
+        id: coverage_check
+        continue-on-error: true
+        run: npm run coverage
+      - name: Print coverage summary
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.node-version == 'lts/*'
+        run: npx nyc report --reporter=text-summary --reporter=text --reporter=lcov
+      - name: Upload coverage artifacts
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.node-version == 'lts/*'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-ubuntu-node22
+          path: |
+            coverage/**
+            .nyc_output/**
+          if-no-files-found: warn
+      - name: Fail if coverage threshold not met
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 'lts/*' && steps.coverage_check.outcome == 'failure'
+        run: exit 1
+      

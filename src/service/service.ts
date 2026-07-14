@@ -18,7 +18,8 @@ const isValidUrl = (url: any, errors: string[]): any => {
 
 const isValidService = (q: any): { isValid: any; errors: string[] } => {
   const errors: string[] = [];
-  const isValid = isValidUrl(q.url, errors) &&
+  const isValid =
+    isValidUrl(q.url, errors) &&
     isValidEnum(q.api, ApiVersion, 'versions of the SDMX RESTful API', errors);
   return { isValid, errors };
 };
@@ -33,7 +34,6 @@ const createSecureInstance = (service: any): any => {
 };
 
 class Service {
-
   static BIS = {
     id: 'BIS',
     name: 'Bank for International Settlements',

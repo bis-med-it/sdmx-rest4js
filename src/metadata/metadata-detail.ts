@@ -1,6 +1,5 @@
 // Specifies the amount of information to be returned for metadata queries.
 const details = {
-
   // All available information for all artefacts is returned.
   FULL: 'full',
 

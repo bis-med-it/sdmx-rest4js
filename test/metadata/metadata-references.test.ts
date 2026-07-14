@@ -6,7 +6,6 @@ import { MetadataReferencesSpecial } from '../../src/metadata/metadata-reference
 chai.should();
 
 describe('Metadata references', () => {
-
   const expectedReferences = [
     'datastructure',
     'metadatastructure',
@@ -57,12 +56,7 @@ describe('Metadata references', () => {
     'all',
   ];
 
-  const excluded = [
-    'structure',
-    'actualconstraint',
-    'allowedconstraint',
-    '*',
-  ];
+  const excluded = ['structure', 'actualconstraint', 'allowedconstraint', '*'];
 
   const special = [
     'none',

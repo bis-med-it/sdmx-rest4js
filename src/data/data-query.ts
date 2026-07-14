@@ -24,7 +24,7 @@ const isValidHistory = (input: any, errors: string[]): boolean => {
   const valid = typeof input === 'boolean';
   if (!valid) {
     errors.push(
-      `${input} is not a valid value for history. Must be true or false`
+      `${input} is not a valid value for history. Must be true or false`,
     );
   }
   return valid;
@@ -34,7 +34,7 @@ const isValidNObs = (input: any, name: string, errors: string[]): boolean => {
   const valid = typeof input === 'number' && input > 0;
   if (!valid) {
     errors.push(
-      `${input} is not a valid value for ${name}. Must be a positive integer`
+      `${input} is not a valid value for ${name}. Must be a positive integer`,
     );
   }
   return valid;
@@ -43,8 +43,7 @@ const isValidNObs = (input: any, name: string, errors: string[]): boolean => {
 const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
   flow: (i, e) => isValidPattern(i, FlowRefType, 'flows', e),
   key: (i, e) => isValidPattern(i, SeriesKeyType, 'series key', e),
-  provider: (i, e) => isValidPattern(i, MultipleProviderRefType,
-    'provider', e),
+  provider: (i, e) => isValidPattern(i, MultipleProviderRefType, 'provider', e),
   start: (i, e) => !i || isValidPeriod(i, 'start period', e),
   end: (i, e) => !i || isValidPeriod(i, 'end period', e),
   updatedAfter: (i, e) => !i || isValidDate(i, 'updatedAfter', e),
@@ -67,13 +66,12 @@ const isValidQuery = (q: any): { isValid: any; errors: string[] } => {
 };
 
 const toKeyString = (dims: any[]): string =>
-  dims.map((d) => (Array.isArray(d) ? d.join('+') : d ?? '')).join('.');
+  dims.map((d) => (Array.isArray(d) ? d.join('+') : (d ?? ''))).join('.');
 
 const toProviderString = (p: any[]): string => p.join('+');
 
 // A query for data, as defined by the SDMX RESTful API.
 class DataQuery {
-
   static from(opts: any): any {
     let key = opts?.key ?? defaults.key;
     if (Array.isArray(key)) key = toKeyString(key);

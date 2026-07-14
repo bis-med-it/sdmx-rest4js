@@ -10,11 +10,9 @@ import { UrlGenerator } from '../../src/utils/url-generator';
 const should = chai.should();
 
 describe('URL Generator (generic)', () => {
-
   it('throws an exception if no query is supplied', () => {
     const test = () => (new UrlGenerator() as any).getUrl();
-    should.Throw(test, Error,
-      'A valid query must be supplied');
+    should.Throw(test, Error, 'A valid query must be supplied');
   });
 
   it('throws an exception if the input is not a data or a metadata query', () => {

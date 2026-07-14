@@ -28,7 +28,7 @@ const canHaveItem = (query: any, errors: string[]): boolean => {
   if (!allowed) {
     errors.push(
       `${query.resource} is not an item scheme and therefore it is ` +
-      'not possible to query by item'
+        'not possible to query by item',
     );
   }
   return allowed;
@@ -38,13 +38,11 @@ const ValidQuery: { [key: string]: (q: any, i: any, e: string[]) => any } = {
   resource: (q, i, e) => isValidMultipleEnum(i, MetadataType, 'resources', e),
   agency: (q, i, e) => isValidPattern(i, AgenciesRefType, 'agencies', e),
   id: (q, i, e) => isValidPattern(i, MultipleIDType, 'resource ids', e),
-  version: (q, i, e) => isValidPattern(i, MultipleVersionsType,
-    'versions', e),
+  version: (q, i, e) => isValidPattern(i, MultipleVersionsType, 'versions', e),
   detail: (q, i, e) => isValidEnum(i, MetadataDetail, 'details', e),
-  references: (q, i, e) => isValidEnum(i, MetadataReferences,
-    'references', e),
-  item: (q, i, e) => isValidPattern(i, MultipleNestedIDType, 'items', e) &&
-    canHaveItem(q, e),
+  references: (q, i, e) => isValidEnum(i, MetadataReferences, 'references', e),
+  item: (q, i, e) =>
+    isValidPattern(i, MultipleNestedIDType, 'items', e) && canHaveItem(q, e),
 };
 
 const isValidQuery = (query: any): { isValid: any; errors: string[] } => {
@@ -61,7 +59,6 @@ const toQueryParam = (p: any[]): string => p.join('+');
 
 // A query for structural metadata, as defined by the SDMX RESTful API.
 class MetadataQuery {
-
   static from(opts: any): any {
     let a = opts?.agency ?? defaults.agency;
     if (Array.isArray(a)) a = toQueryParam(a);

@@ -39,7 +39,7 @@ const isValidKey = (input: any, name: string, errors: string[]): boolean => {
 const isValidFilters = (
   input: any,
   name: string,
-  errors: string[]
+  errors: string[],
 ): boolean => {
   let valid = true;
   for (const filter of input) {
@@ -72,8 +72,7 @@ const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
   updatedAfter: (i, e) => !i || isValidDate(i, 'updatedAfter', e),
   filters: (i, e) => isValidFilters(i, 'filters', e),
   mode: (i, e) => isValidEnum(i, AvailabilityMode, 'mode', e),
-  references: (i, e) => isValidEnum(i, AvailabilityReferences,
-    'references', e),
+  references: (i, e) => isValidEnum(i, AvailabilityReferences, 'references', e),
 };
 
 const isValidQuery = (q: any): { isValid: any; errors: string[] } => {
@@ -97,7 +96,6 @@ const expected = [
 ];
 
 class AvailabilityQuery {
-
   static from(opts: any): any {
     if (opts) {
       for (const k of Object.keys(opts)) {

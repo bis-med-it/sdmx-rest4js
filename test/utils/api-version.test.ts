@@ -6,7 +6,6 @@ import { getKeyFromVersion } from '../../src/utils/api-version';
 chai.should();
 
 describe('API versions', () => {
-
   const expectedAPIs = [
     'v1.0.0',
     'v1.0.1',
@@ -216,7 +215,6 @@ describe('API resources', () => {
 });
 
 describe('Translator', () => {
-
   it('translates version numbers into keys', () => {
     const api = ApiVersion.v2_0_0;
     const k = getKeyFromVersion(api);

@@ -4,7 +4,6 @@ import { SchemaFormat } from '../../src/schema/schema-format';
 chai.should();
 
 describe('Schema formats', () => {
-
   const expectedFormats = [
     'application/vnd.sdmx.schema+json;version=2.0.0',
     'application/vnd.sdmx.schema+xml;version=3.0.0',
