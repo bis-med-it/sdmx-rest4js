@@ -11,12 +11,30 @@ import {
   createErrorMessage,
 } from '../utils/validators';
 
-const defaults = {
+export interface SchemaQueryInput {
+  context?: string;
+  agency?: string;
+  id?: string;
+  version?: string;
+  explicit?: boolean;
+  obsDimension?: string;
+}
+
+export interface SchemaQueryValue {
+  context: string;
+  agency: string;
+  id: string;
+  version: string;
+  explicit: boolean;
+  obsDimension?: string;
+}
+
+const defaults: Pick<SchemaQueryValue, 'version' | 'explicit'> = {
   version: 'latest',
   explicit: false,
 };
 
-const isValidExplicit = (input: any, errors: string[]): boolean => {
+const isValidExplicit = (input: boolean, errors: string[]): boolean => {
   const valid = typeof input === 'boolean';
   if (!valid) {
     errors.push(
@@ -26,33 +44,54 @@ const isValidExplicit = (input: any, errors: string[]): boolean => {
   return valid;
 };
 
-const ValidQuery: { [key: string]: (q: any, i: any, e: string[]) => any } = {
-  context: (q, i, e) => isValidEnum(i, SchemaContext, 'context', e),
-  agency: (q, i, e) => isValidPattern(i, NestedNCNameIDType, 'agency', e),
-  id: (q, i, e) => isValidPattern(i, IDType, 'resource ids', e),
-  version: (q, i, e) => isValidPattern(i, SingleVersionType, 'versions', e),
-  explicit: (q, i, e) => isValidExplicit(i, e),
-  obsDimension: (q, i, e) =>
+type SchemaQueryField = keyof SchemaQueryValue;
+type QueryValidators = {
+  [K in SchemaQueryField]: (
+    input: SchemaQueryValue[K],
+    errors: string[],
+  ) => boolean;
+};
+
+const ValidQuery: QueryValidators = {
+  context: (i, e) => isValidEnum(i, SchemaContext, 'context', e),
+  agency: (i, e) => isValidPattern(i, NestedNCNameIDType, 'agency', e),
+  id: (i, e) => isValidPattern(i, IDType, 'resource ids', e),
+  version: (i, e) => isValidPattern(i, SingleVersionType, 'versions', e),
+  explicit: (i, e) => isValidExplicit(i, e),
+  obsDimension: (i, e) =>
     !i || isValidPattern(i, NCNameIDType, 'obs dimension', e),
 };
 
-const isValidQuery = (query: any): { isValid: any; errors: string[] } => {
+const isValidQuery = (
+  query: SchemaQueryValue,
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  let isValid: any = false;
-  for (const k of Object.keys(query)) {
-    isValid = ValidQuery[k](query, query[k], errors);
-    if (!isValid) break;
+  const checks = [
+    () => ValidQuery.context(query.context, errors),
+    () => ValidQuery.agency(query.agency, errors),
+    () => ValidQuery.id(query.id, errors),
+    () => ValidQuery.version(query.version, errors),
+    () => ValidQuery.explicit(query.explicit, errors),
+    () => ValidQuery.obsDimension(query.obsDimension, errors),
+  ];
+
+  for (const check of checks) {
+    const isValid = check();
+    if (!isValid) {
+      return { isValid: false, errors };
+    }
   }
-  return { isValid, errors };
+
+  return { isValid: true, errors };
 };
 
 // A query for XML schemas, as defined by the SDMX RESTful API.
-class SchemaQuery {
-  static from(opts: any): any {
-    const query = {
-      context: opts?.context,
-      agency: opts?.agency,
-      id: opts?.id,
+class SchemaQueryBuilder {
+  static from(opts?: SchemaQueryInput | null): SchemaQueryValue {
+    const query: SchemaQueryValue = {
+      context: opts?.context ?? '',
+      agency: opts?.agency ?? '',
+      id: opts?.id ?? '',
       version: opts?.version ?? defaults.version,
       explicit: opts?.explicit ?? defaults.explicit,
       obsDimension: opts?.obsDimension,
@@ -65,4 +104,4 @@ class SchemaQuery {
   }
 }
 
-export { SchemaQuery };
+export { SchemaQueryBuilder as SchemaQuery };

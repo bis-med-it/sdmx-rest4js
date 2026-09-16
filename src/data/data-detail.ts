@@ -1,5 +1,5 @@
 // Specifies the amount of information to be returned for data queries.
-const details = {
+const details = Object.freeze({
   // All data and documentation, including annotations.
   FULL: 'full',
 
@@ -12,6 +12,7 @@ const details = {
   // The series and groups, including attributes and annotations, but no
   // observations
   NO_DATA: 'nodata',
-};
+} as const);
 
-export const DataDetail = Object.freeze(details);
+export const DataDetail = details;
+export type DataDetailValue = (typeof details)[keyof typeof details];

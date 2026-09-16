@@ -1,20 +1,22 @@
 import { ApiNumber, getKeyFromVersion } from '../utils/api-version';
+import type { AvailabilityQueryValue } from '../avail/availability-query';
+import type { ServiceInfo } from '../service/service';
 import {
   createEntryPoint,
   validateDataForV2,
   parseFlow,
 } from '../utils/url-generator-common';
 
-const handleAvailabilityPathParams = (q: any): string => {
-  const path = [];
+const handleAvailabilityPathParams = (q: AvailabilityQueryValue): string => {
+  const path: string[] = [];
   if (q.component !== 'all') path.push(q.component);
   if (q.provider !== 'all' || path.length) path.push(q.provider);
   if (q.key !== 'all' || path.length) path.push(q.key);
   return path.length ? '/' + path.reverse().join('/') : '';
 };
 
-const handleAvailabilityQueryParams = (q: any): string => {
-  const p = [];
+const handleAvailabilityQueryParams = (q: AvailabilityQueryValue): string => {
+  const p: string[] = [];
   if (q.updatedAfter) p.push(`updatedAfter=${q.updatedAfter}`);
   if (q.end) p.push(`endPeriod=${q.end}`);
   if (q.start) p.push(`startPeriod=${q.start}`);
@@ -23,23 +25,26 @@ const handleAvailabilityQueryParams = (q: any): string => {
   return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
 };
 
-const handleAvailabilityV2PathParams = (q: any): string => {
-  const path = [];
+const handleAvailabilityV2PathParams = (q: AvailabilityQueryValue): string => {
+  const path: string[] = [];
   if (q.component !== 'all') path.push(q.component);
   const k = q.key === 'all' ? '*' : q.key;
   if (k !== '*' || path.length) path.push(k);
   return path.length ? '/' + path.reverse().join('/') : '';
 };
 
-const handleAvailabilityV2QueryParams = (q: any): string => {
-  const p = [];
+const handleAvailabilityV2QueryParams = (q: AvailabilityQueryValue): string => {
+  const p: string[] = [];
   if (q.updatedAfter) p.push(`updatedAfter=${q.updatedAfter}`);
   if (q.mode !== 'exact') p.push(`mode=${q.mode}`);
   if (q.references !== 'none') p.push(`references=${q.references}`);
   return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
 };
 
-const createShortV1AvailUrl = (q: any, s: any): string => {
+const createShortV1AvailUrl = (
+  q: AvailabilityQueryValue,
+  s: ServiceInfo,
+): string => {
   let u = createEntryPoint(s);
   u += `availableconstraint/${q.flow}`;
   u += handleAvailabilityPathParams(q);
@@ -47,7 +52,10 @@ const createShortV1AvailUrl = (q: any, s: any): string => {
   return u;
 };
 
-const createShortV2AvailUrl = (q: any, s: any): string => {
+const createShortV2AvailUrl = (
+  q: AvailabilityQueryValue,
+  s: ServiceInfo,
+): string => {
   validateDataForV2(q, s);
   let u = createEntryPoint(s);
   u += 'availability/dataflow/';
@@ -62,7 +70,10 @@ const createShortV2AvailUrl = (q: any, s: any): string => {
   return u;
 };
 
-const createV1AvailUrl = (q: any, s: any): string => {
+const createV1AvailUrl = (
+  q: AvailabilityQueryValue,
+  s: ServiceInfo,
+): string => {
   let url = createEntryPoint(s);
   url += 'availableconstraint';
   url += `/${q.flow}/${q.key}/${q.provider}/${q.component}`;
@@ -73,7 +84,10 @@ const createV1AvailUrl = (q: any, s: any): string => {
   return url;
 };
 
-const createV2AvailUrl = (q: any, s: any): string => {
+const createV2AvailUrl = (
+  q: AvailabilityQueryValue,
+  s: ServiceInfo,
+): string => {
   validateDataForV2(q, s);
   let url = createEntryPoint(s);
   url += 'availability';
@@ -87,8 +101,8 @@ const createV2AvailUrl = (q: any, s: any): string => {
 };
 
 const createShortAvailabilityQuery = (
-  q: any,
-  s: any,
+  q: AvailabilityQueryValue,
+  s: ServiceInfo,
   api_number: number,
 ): string => {
   if (api_number < ApiNumber.v2_0_0) {
@@ -99,8 +113,8 @@ const createShortAvailabilityQuery = (
 };
 
 const createAvailabilityQuery = (
-  q: any,
-  s: any,
+  q: AvailabilityQueryValue,
+  s: ServiceInfo,
   api_number: number,
 ): string => {
   if (api_number < ApiNumber.v2_0_0) {
@@ -111,7 +125,7 @@ const createAvailabilityQuery = (
 };
 
 class Handler {
-  handle(q: any, s: any, skip?: boolean): string {
+  handle(q: AvailabilityQueryValue, s: ServiceInfo, skip?: boolean): string {
     const api_number = ApiNumber[getKeyFromVersion(s.api)];
     if (api_number < ApiNumber.v1_3_0) {
       throw Error(`Availability query not supported in ${s.api}`);

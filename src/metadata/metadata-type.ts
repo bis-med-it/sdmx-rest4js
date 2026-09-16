@@ -16,9 +16,9 @@ const itemSchemes = [
   'customtypescheme',
   'namepersonalisationscheme',
   'namealiasscheme',
-];
+] as const;
 
-const types: { [key: string]: string } = {
+const types = Object.freeze({
   DATA_STRUCTURE: 'datastructure',
   METADATA_STRUCTURE: 'metadatastructure',
   CATEGORY_SCHEME: 'categoryscheme',
@@ -63,8 +63,9 @@ const types: { [key: string]: string } = {
   METADATA_PROVIDER_SCHEME: 'metadataproviderscheme',
   METADATA_PROVISION_AGREEMENT: 'metadataprovisionagreement',
   SDMX_3_0_ALL: '*',
-};
+} as const);
 
-export const MetadataType = Object.freeze(types);
+export const MetadataType = types;
+export type MetadataTypeValue = (typeof types)[keyof typeof types];
 export const isItemScheme = (type: string): boolean =>
-  itemSchemes.indexOf(type) > -1;
+  (itemSchemes as readonly string[]).indexOf(type) > -1;

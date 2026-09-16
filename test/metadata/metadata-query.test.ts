@@ -74,7 +74,7 @@ describe('Metadata query', () => {
     });
 
     it('throws an exception if the resource type is unknown', () => {
-      const test = () => MetadataQuery.from({ resource: 'test' });
+      const test = () => MetadataQuery.from({ resource: 'test' } as any);
       should.Throw(test, Error, 'Not a valid metadata query');
     });
   });
@@ -391,7 +391,7 @@ describe('Metadata query', () => {
 
     it('throws an exception of the value for detail is unknown', () => {
       const test = () =>
-        MetadataQuery.from({ resource: 'dataflow', detail: 'test' });
+        MetadataQuery.from({ resource: 'dataflow', detail: 'test' } as any);
       should.Throw(test, Error, 'Not a valid metadata query');
     });
   });
@@ -408,7 +408,7 @@ describe('Metadata query', () => {
 
     it('throws an exception if the value for references is unknown', () => {
       const test = () =>
-        MetadataQuery.from({ resource: 'dataflow', references: 'ref' });
+        MetadataQuery.from({ resource: 'dataflow', references: 'ref' } as any);
       should.Throw(test, Error, 'Not a valid metadata query');
     });
   });

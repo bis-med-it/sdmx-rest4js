@@ -15,23 +15,25 @@
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "mocha \"test/**/*.test.ts\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:test": "tsc --project tsconfig.test.json"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sosna/sdmx-rest4js.git"
+    "url": "https://github.com/bis-med-it/sdmx-rest4js.git"
   },
   "keywords": [
     "sdmx",
     "sdmx restful web services",
     "api"
   ],
-  "author": "Xavier Sosnovsky <xso@sosna.ws>",
+  "author": "Xavier Sosnovsky",
+  "authors": ["Xavier Sosnovsky", "Matt Nelson"],
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/sosna/sdmx-rest4js/issues"
+    "url": "https://github.com/bis-med-it/sdmx-rest4js/issues"
   },
-  "homepage": "https://github.com/sosna/sdmx-rest4js#readme",
+  "homepage": "https://github.com/bis-med-it/sdmx-rest4js#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/chai": "^4.3.20",
@@ -42,7 +44,7 @@
     "chai-as-promised": "7.1.1",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
-    "mocha": "11.7.6",
+    "mocha": "^11.8.0",
     "nock": "13.2.8",
     "nyc": "18.0.0",
     "prettier": "^3.9.4",
@@ -51,7 +53,19 @@
     "typescript-eslint": "^8.63.0"
   },
   "overrides": {
-    "js-yaml": "4.3.0",
+    "minimatch@9": {
+      "brace-expansion": "5.0.9"
+    },
+    "minimatch@10": {
+      "brace-expansion": "5.0.9"
+    },
+    "mocha": {
+      "diff": "8.0.3"
+    },
+    "ts-node": {
+      "diff": "8.0.3"
+    },
+    "js-yaml": "4.3.2",
     "serialize-javascript": "7.0.7"
   },
   "config": {
@@ -68,9 +82,5 @@
     "timeout": 40000,
     "reporter": "spec",
     "recursive": true
-  },
-  "dependencies": {
-    "es6-promise": "4.2.8",
-    "isomorphic-fetch": "3.0.0"
   }
 }

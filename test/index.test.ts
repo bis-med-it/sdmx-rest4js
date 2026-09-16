@@ -1,13 +1,59 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import nock from 'nock';
 import sdmxrest from '../src/index';
 import { ApiVersion } from '../src/utils/api-version';
 
 chai.use(chaiAsPromised);
 const should = chai.should();
 
+type FetchCall = {
+  url: string;
+  init?: RequestInit;
+};
+
+interface FetchMockOptions {
+  status?: number;
+  body?: string;
+  headers?: Record<string, string>;
+  reject?: boolean;
+}
+
+const createFetchMock = (options: FetchMockOptions = {}): FetchCall[] => {
+  const calls: FetchCall[] = [];
+  const mockFetch = async (url: string, init?: RequestInit) => {
+    calls.push({ url, init });
+    if (options.reject) {
+      throw new TypeError('fetch failed');
+    }
+    const responseHeaders = options.headers ?? {};
+    return {
+      status: options.status ?? 200,
+      headers: {
+        get(name: string): string | null {
+          const headerKey = Object.keys(responseHeaders).find(
+            (key) => key.toLowerCase() === name.toLowerCase(),
+          );
+          return headerKey ? responseHeaders[headerKey] : null;
+        },
+      },
+      text: async () => options.body ?? '',
+    } as Response;
+  };
+
+  globalThis.fetch = mockFetch as typeof globalThis.fetch;
+  return calls;
+};
+
+const getHeaders = (call: FetchCall): Record<string, string | undefined> =>
+  (call.init?.headers ?? {}) as Record<string, string | undefined>;
+
 describe('API', () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
   it('offers the expected functions and objects', () => {
     sdmxrest.should.have.property('getService');
     sdmxrest.should.have.property('services').that.is.an('array');
@@ -368,7 +414,7 @@ describe('API', () => {
     });
 
     it('creates a URL from an availability2 and service objects (mode)', () => {
-      const q = { mode: 'exact' };
+      const q = { mode: 'exact' as const };
       const s = sdmxrest.getService({ url: 'http://ws-entry-point' });
       const url = sdmxrest.getUrl(q, s);
       url.should.be.a('string');
@@ -388,7 +434,7 @@ describe('API', () => {
     });
 
     it('creates a URL from an availability2 and a service objects (references)', () => {
-      const q = { references: 'all' };
+      const q = { references: 'all' as const };
       const s = sdmxrest.getService({ url: 'http://ws-entry-point' });
       const url = sdmxrest.getUrl(q, s);
       url.should.be.a('string');
@@ -496,7 +542,8 @@ describe('API', () => {
     });
 
     it('fails if the input is not of the expected type', () => {
-      let test = () => sdmxrest.getUrl(undefined, sdmxrest.getService('ECB'));
+      let test = () =>
+        sdmxrest.getUrl(undefined as any, sdmxrest.getService('ECB'));
       should.Throw(test, Error, 'Not a valid query');
 
       test = () => sdmxrest.getUrl({}, sdmxrest.getService('ECB'));
@@ -516,46 +563,39 @@ describe('API', () => {
 
   describe('when using request()', () => {
     it('offers to execute a request from a query and service objects', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request(
         { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
         'ECB',
       );
+      calls[0].url.should.contain('EXR');
       return response.should.eventually.equal('OK');
     });
 
     it('offers to execute a request from an SDMX RESTful query string (known service)', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request(
         'http://sdw-wsrest.ecb.europa.eu/service/data/EXR',
       );
+      calls[0].url.should.contain('EXR');
       return response.should.eventually.equal('OK');
     });
 
     it('offers to execute a request from an SDMX RESTful query string (unknown service)', () => {
-      nock('http://test.org')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request('http://test.org/data/EXR');
+      calls[0].url.should.contain('EXR');
       return response.should.eventually.equal('OK');
     });
 
     it('throws an exception in case of issues with a request', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('TEST') > -1)
-        .reply(404);
+      createFetchMock({ status: 404, body: '' });
       const response = sdmxrest.request({ flow: 'TEST' }, 'ECB');
       return response.should.be.rejectedWith(RangeError);
     });
 
     it('does not throw an exception for a 404 with updatedAfter', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('ICP') > -1)
-        .reply(404);
+      createFetchMock({ status: 404, body: '' });
       const response = sdmxrest.request(
         { flow: 'ICP', updatedAfter: '2016-01-01T14:54:27Z' },
         'ECB',
@@ -565,72 +605,67 @@ describe('API', () => {
     });
 
     it('throws an exception when the Service URL is invalid', () => {
+      createFetchMock({ reject: true });
       const response = sdmxrest.request({ flow: 'ICP' }, { url: 'ws.test' });
       response.should.not.be.fulfilled;
       return response.should.be.rejected;
     });
 
+    it('throws an exception when fetch is unavailable', () => {
+      globalThis.fetch = undefined as unknown as typeof globalThis.fetch;
+      (() => sdmxrest.request({ flow: 'ICP' }, 'ECB')).should.throw(
+        ReferenceError,
+        'Global fetch is not available',
+      );
+    });
+
     it('adds an accept header to data queries if the service has a default format', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader(
-          'accept',
-          (h: any) => h[0].indexOf('application/vnd.sdmx.data+json') > -1,
-        )
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request(
         { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
         'ECB',
+      );
+      getHeaders(calls[0]!).accept!.should.contain(
+        'application/vnd.sdmx.data+json',
       );
       return response.should.eventually.equal('OK');
     });
 
     it('adds an accept header to structure queries if the service has a default format', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader(
-          'accept',
-          (h: any) => h[0].indexOf('application/vnd.sdmx.structure+xml') > -1,
-        )
-        .get((uri: string) => uri.indexOf('codelist') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request(
         { resource: 'codelist', id: 'CL_FREQ' },
         'ECB',
+      );
+      getHeaders(calls[0]!).accept!.should.contain(
+        'application/vnd.sdmx.structure+xml',
       );
       return response.should.eventually.equal('OK');
     });
 
     it('adds an accept header to schema queries if the service has a default format', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) => h[0].indexOf('application/xml') > -1)
-        .get((uri: string) => uri.indexOf('schema') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request(
         { context: 'dataflow', agency: 'ECB', id: 'EXR' },
         'ECB',
       );
+      getHeaders(calls[0]!).accept!.should.contain('application/xml');
       return response.should.eventually.equal('OK');
     });
 
     it('adds an accept header to data URLs if the service has a default format', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader(
-          'accept',
-          (h: any) => h[0].indexOf('application/vnd.sdmx.data+json') > -1,
-        )
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const url =
         'http://sdw-wsrest.ecb.europa.eu/service/data/EXR/A..EUR.SP00.A';
       const response = sdmxrest.request(url);
+      getHeaders(calls[0]!).accept!.should.contain(
+        'application/vnd.sdmx.data+json',
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('does not overwrite the accept header passed by the client (data)', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept', (h: any) => h[0].indexOf('application/xml') > -1)
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const opts = {
         headers: {
           accept: 'application/xml',
@@ -641,19 +676,12 @@ describe('API', () => {
         'ECB',
         opts,
       );
+      getHeaders(calls[0]!).accept!.should.equal('application/xml');
       return response.should.eventually.equal('OK');
     });
 
     it('does not overwrite the accept header passed by the client (structure)', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader(
-          'accept',
-          (h: any) =>
-            h[0].indexOf('application/vnd.sdmx.structure+json;version=1.0.0') >
-            -1,
-        )
-        .get((uri: string) => uri.indexOf('codelist') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const opts = {
         headers: {
           accept: 'application/vnd.sdmx.structure+json;version=1.0.0',
@@ -664,18 +692,14 @@ describe('API', () => {
         'ECB',
         opts,
       );
+      getHeaders(calls[0]!).accept!.should.equal(
+        'application/vnd.sdmx.structure+json;version=1.0.0',
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('does not overwrite the accept header passed by the client (schema)', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader(
-          'accept',
-          (h: any) =>
-            h[0].indexOf('application/vnd.sdmx.structure+xml;version=2.1') > -1,
-        )
-        .get((uri: string) => uri.indexOf('schema') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const opts = {
         headers: {
           accept: 'application/vnd.sdmx.structure+xml;version=2.1',
@@ -686,63 +710,53 @@ describe('API', () => {
         'ECB',
         opts,
       );
+      getHeaders(calls[0]!).accept!.should.equal(
+        'application/vnd.sdmx.structure+xml;version=2.1',
+      );
       return response.should.eventually.equal('OK');
     });
 
     it('does not add an accept header to data queries if the service does not have a default format', () => {
-      nock('http://stats.oecd.org')
-        .matchHeader('accept', (h: any) => h[0] === '*/*')
-        .get((uri: string) => uri.indexOf('EO') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request({ flow: 'EO' }, 'OECD');
+      getHeaders(calls[0]!).accept!.should.equal('*/*');
       return response.should.eventually.equal('OK');
     });
 
     it('does not add an accept header to structure queries if the service does not have a default format', () => {
-      nock('http://stats.oecd.org')
-        .matchHeader('accept', (h: any) => h[0] === '*/*')
-        .get((uri: string) => uri.indexOf('codelist') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request(
         { resource: 'codelist', id: 'CL_FREQ' },
         'OECD',
       );
+      getHeaders(calls[0]!).accept!.should.equal('*/*');
       return response.should.eventually.equal('OK');
     });
 
     it('does not add an accept header to schema queries if the service does not have a default format', () => {
-      nock('http://stats.oecd.org')
-        .matchHeader('accept', (h: any) => h[0] === '*/*')
-        .get((uri: string) => uri.indexOf('schema') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request(
         { context: 'dataflow', agency: 'ECB', id: 'EXR' },
         'OECD',
       );
+      getHeaders(calls[0]!).accept!.should.equal('*/*');
       return response.should.eventually.equal('OK');
     });
 
     it('adds a default user agent to queries', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader(
-          'user-agent',
-          (h: any) =>
-            h[0] === 'sdmx-rest4js (https://github.com/sosna/sdmx-rest4js)',
-        )
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const response = sdmxrest.request(
         { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
         'ECB',
+      );
+      getHeaders(calls[0]!)['user-agent']!.should.equal(
+        'sdmx-rest4js (https://github.com/sosna/sdmx-rest4js)',
       );
       return response.should.eventually.equal('OK');
     });
 
     it('does not overwrite the user agent passed by the client', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('user-agent', (h: any) => h[0] === 'test')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      const calls = createFetchMock({ body: 'OK' });
       const opts = {
         headers: {
           'user-agent': 'test',
@@ -753,43 +767,17 @@ describe('API', () => {
         'ECB',
         opts,
       );
-      return response.should.eventually.equal('OK');
-    });
-
-    it('adds a default accept-encoding header to queries', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept-encoding', (h: any) => h[0] === 'gzip,deflate')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
-      const response = sdmxrest.request(
-        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
-        'ECB',
-      );
-      return response.should.eventually.equal('OK');
-    });
-
-    it('allows disabling content compression', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .matchHeader('accept-encoding', (h: any) => h === undefined)
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
-      const opts = {
-        compress: false,
-      };
-      const response = sdmxrest.request(
-        { flow: 'EXR', key: 'A.CHF.NOK.SP00.A' },
-        'ECB',
-        opts,
-      );
+      getHeaders(calls[0]!)['user-agent']!.should.equal('test');
       return response.should.eventually.equal('OK');
     });
   });
 
   describe('when using request2()', () => {
     it('offers a way to retrieve response headers', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK', { 'X-My-Headers': 'My Header value' });
+      createFetchMock({
+        body: 'OK',
+        headers: { 'X-My-Headers': 'My Header value' },
+      });
 
       const request = sdmxrest.getDataQuery({
         flow: 'EXR',
@@ -813,9 +801,7 @@ describe('API', () => {
     });
 
     it('accept codes in the 300 range', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('TEST') > -1)
-        .reply(306, 'Redirected');
+      createFetchMock({ status: 306, body: 'Redirected' });
       const request = sdmxrest.getDataQuery({ flow: 'TEST' });
       return sdmxrest.request2(request, 'ECB').then((response: any) => {
         const test = () => sdmxrest.checkStatus(request, response);
@@ -828,9 +814,7 @@ describe('API', () => {
     });
 
     it('accept code 100', () => {
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('TEST') > -1)
-        .reply(100, 'Continue');
+      createFetchMock({ status: 100, body: 'Continue' });
       const request = sdmxrest.getDataQuery({ flow: 'TEST' });
       return sdmxrest.request2(request, 'ECB').then((response: any) => {
         const test = () => sdmxrest.checkStatus(request, response);
@@ -844,11 +828,18 @@ describe('API', () => {
   });
 
   describe('when using checkMediaType()', () => {
+    it('throws an error in case there is no response', () => {
+      const test = () =>
+        sdmxrest.checkMediaType(
+          'application/vnd.sdmx.data+json;version=1.0.0',
+          undefined as any,
+        );
+      return should.Throw(test, ReferenceError, 'Not a valid response');
+    });
+
     it('accepts SDMX data formats', () => {
       const fmt = 'application/vnd.sdmx.data+json;version=1.0.0';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK', { 'Content-Type': fmt });
+      createFetchMock({ body: 'OK', headers: { 'Content-Type': fmt } });
       return sdmxrest
         .request2({ flow: 'EXR', key: 'A.CHF.EUR.SP00.A' }, 'ECB')
         .then((response: any) => {
@@ -859,9 +850,7 @@ describe('API', () => {
 
     it('accepts SDMX metadata formats', () => {
       const fmt = 'application/vnd.sdmx.structure+xml;version=2.1';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('codelist') > -1)
-        .reply(200, 'OK', { 'Content-Type': fmt });
+      createFetchMock({ body: 'OK', headers: { 'Content-Type': fmt } });
       return sdmxrest
         .request2({ resource: 'codelist' }, 'ECB')
         .then((response: any) => {
@@ -872,9 +861,7 @@ describe('API', () => {
 
     it('accepts generic formats', () => {
       const fmt = 'application/xml';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('codelist') > -1)
-        .reply(200, 'OK', { 'Content-Type': fmt });
+      createFetchMock({ body: 'OK', headers: { 'Content-Type': fmt } });
       return sdmxrest
         .request2({ resource: 'codelist' }, 'ECB')
         .then((response: any) => {
@@ -885,9 +872,7 @@ describe('API', () => {
 
     it('throws an error in case the format is not an SDMX one', () => {
       const fmt = 'application/vnd.test.data+json';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK', { 'Content-Type': fmt });
+      createFetchMock({ body: 'OK', headers: { 'Content-Type': fmt } });
       return sdmxrest.request2({ flow: 'EXR' }, 'ECB').then((response: any) => {
         const test = () => sdmxrest.checkMediaType(fmt, response);
         return should.Throw(test, RangeError, 'Not an SDMX format: ' + fmt);
@@ -896,9 +881,7 @@ describe('API', () => {
 
     it('throws an error in case no format is specified', () => {
       const fmt = 'application/xml';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK');
+      createFetchMock({ body: 'OK' });
       return sdmxrest.request2({ flow: 'EXR' }, 'ECB').then((response: any) => {
         const test = () => sdmxrest.checkMediaType(fmt, response);
         return should.Throw(test, RangeError, 'Not an SDMX format: null');
@@ -907,9 +890,10 @@ describe('API', () => {
 
     it('throws an error in case the format is not the requested one', () => {
       const fmt = 'application/vnd.sdmx.data+json;version=1.0.0';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK', { 'Content-Type': 'application/xml' });
+      createFetchMock({
+        body: 'OK',
+        headers: { 'Content-Type': 'application/xml' },
+      });
       const opts = {
         headers: {
           accept: fmt,
@@ -929,9 +913,7 @@ describe('API', () => {
 
     it('Does not throw an error in case the received format is the requested one', () => {
       const fmt = 'application/vnd.sdmx.data+json;version=1.0.0';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK', { 'Content-Type': fmt });
+      createFetchMock({ body: 'OK', headers: { 'Content-Type': fmt } });
       const opts = {
         headers: {
           accept: fmt,
@@ -948,9 +930,7 @@ describe('API', () => {
     it('Does not throw an error in case the only difference is the space character', () => {
       const fmt1 = 'application/vnd.sdmx.genericdata+xml;version=2.1';
       const fmt2 = 'application/vnd.sdmx.genericdata+xml; version=2.1';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK', { 'Content-Type': fmt2 });
+      createFetchMock({ body: 'OK', headers: { 'Content-Type': fmt2 } });
       const opts = {
         headers: {
           accept: fmt1,
@@ -967,9 +947,7 @@ describe('API', () => {
     it('Does not throw an error in case the received format is one of the requested ones', () => {
       const fmt =
         'application/vnd.sdmx.data+json;version=1.0.0, application/json;q=0.9, text/csv;q=0.5, */*;q=0.4';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK', { 'Content-Type': 'text/csv' });
+      createFetchMock({ body: 'OK', headers: { 'Content-Type': 'text/csv' } });
       const opts = {
         headers: {
           accept: fmt,
@@ -986,9 +964,10 @@ describe('API', () => {
     it('Throws an error in case the received format is not one of the requested ones', () => {
       const fmt =
         'application/vnd.sdmx.data+json;version=1.0.0, application/json;q=0.9, text/csv;q=0.5, */*;q=0.4';
-      nock('http://sdw-wsrest.ecb.europa.eu')
-        .get((uri: string) => uri.indexOf('EXR') > -1)
-        .reply(200, 'OK', { 'Content-Type': 'application/xml' });
+      createFetchMock({
+        body: 'OK',
+        headers: { 'Content-Type': 'application/xml' },
+      });
       const opts = {
         headers: {
           accept: fmt,

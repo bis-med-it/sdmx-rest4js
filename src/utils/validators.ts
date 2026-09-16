@@ -1,8 +1,10 @@
 import { ReportingPeriodType } from './sdmx-patterns';
 
+type EnumValues = Readonly<Record<string, string>>;
+
 const validEnum = (
-  input: any,
-  list: { [key: string]: any },
+  input: string,
+  list: EnumValues,
   name: string,
   errors: string[],
 ): boolean => {
@@ -17,20 +19,20 @@ const validEnum = (
 };
 
 const validMultipleEnum = (
-  input: any,
-  list: { [key: string]: any },
+  input: string,
+  list: EnumValues,
   name: string,
   errors: string[],
 ): boolean => {
   if (input && input.indexOf('+') > -1) {
     const output = input
       .split('+')
-      .map((r: any) => validEnum(r, list, name, errors));
+      .map((r) => validEnum(r, list, name, errors));
     return output.indexOf(false) === -1;
   } else if (input && input.indexOf(',') > -1) {
     const output = input
       .split(',')
-      .map((r: any) => validEnum(r, list, name, errors));
+      .map((r) => validEnum(r, list, name, errors));
     return output.indexOf(false) === -1;
   } else {
     return validEnum(input, list, name, errors);
@@ -38,12 +40,12 @@ const validMultipleEnum = (
 };
 
 const validPattern = (
-  input: any,
+  input: string,
   regex: RegExp,
   name: string,
   errors: string[],
-): any => {
-  const valid = input && input.match(regex);
+): boolean => {
+  const valid = !!input && regex.test(input);
   if (!valid) {
     errors.push(
       `${input} is not compliant with the pattern defined for ` +
@@ -61,7 +63,11 @@ const createErrorMessage = (errors: string[], type: string): string => {
   return msg;
 };
 
-const validIso8601 = (input: any, name: string, errors: string[]): boolean => {
+const validIso8601 = (
+  input: string,
+  name: string,
+  errors: string[],
+): boolean => {
   let valid = true;
   if (isNaN(Date.parse(input))) {
     errors.push(`${name} must be a valid ISO8601 date`);
@@ -70,7 +76,11 @@ const validIso8601 = (input: any, name: string, errors: string[]): boolean => {
   return valid;
 };
 
-const validPeriod = (input: any, name: string, errors: string[]): any => {
+const validPeriod = (
+  input: string,
+  name: string,
+  errors: string[],
+): boolean => {
   let valid =
     validIso8601(input, name, errors) ||
     validPattern(input, ReportingPeriodType, name, errors);

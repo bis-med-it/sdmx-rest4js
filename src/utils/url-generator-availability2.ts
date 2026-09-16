@@ -1,4 +1,6 @@
 import { ApiNumber, getKeyFromVersion } from '../utils/api-version';
+import type { AvailabilityQuery2Value } from '../avail/availability-query2';
+import type { ServiceInfo } from '../service/service';
 import {
   createEntryPoint,
   validateDataForV2,
@@ -6,8 +8,8 @@ import {
   parseFilter,
 } from '../utils/url-generator-common';
 
-const handlePathParams = (q: any): string => {
-  const p = [];
+const handlePathParams = (q: AvailabilityQuery2Value): string => {
+  const p: string[] = [];
   const c = parseContext(q.context);
   if (q.component !== '*') p.push(q.component);
   if (q.key !== '*' || p.length) p.push(q.key);
@@ -18,8 +20,8 @@ const handlePathParams = (q: any): string => {
   return p.length ? '/' + p.reverse().join('/') : '';
 };
 
-const handleQueryParams = (q: any): string => {
-  const p = [];
+const handleQueryParams = (q: AvailabilityQuery2Value): string => {
+  const p: string[] = [];
   if (q.filters) {
     for (const filter of q.filters) {
       const f = parseFilter(filter);
@@ -32,7 +34,10 @@ const handleQueryParams = (q: any): string => {
   return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
 };
 
-const createShortAvailabilityQuery = (q: any, s: any): string => {
+const createShortAvailabilityQuery = (
+  q: AvailabilityQuery2Value,
+  s: ServiceInfo,
+): string => {
   validateDataForV2(q, s);
   let u = createEntryPoint(s);
   u += 'availability';
@@ -41,7 +46,10 @@ const createShortAvailabilityQuery = (q: any, s: any): string => {
   return u;
 };
 
-const createAvailabilityQuery = (q: any, s: any): string => {
+const createAvailabilityQuery = (
+  q: AvailabilityQuery2Value,
+  s: ServiceInfo,
+): string => {
   validateDataForV2(q, s);
   let url = createEntryPoint(s);
   const fc = parseContext(q.context);
@@ -60,7 +68,7 @@ const createAvailabilityQuery = (q: any, s: any): string => {
 };
 
 class Handler {
-  handle(q: any, s: any, skip?: boolean): string {
+  handle(q: AvailabilityQuery2Value, s: ServiceInfo, skip?: boolean): string {
     const api = ApiNumber[getKeyFromVersion(s.api)];
     if (api < ApiNumber.v2_0_0) {
       throw Error(`SDMX 3.0 queries not allowed in ${s.api}`);

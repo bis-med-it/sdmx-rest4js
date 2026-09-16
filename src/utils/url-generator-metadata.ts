@@ -4,6 +4,8 @@ import {
   ApiNumber,
   getKeyFromVersion,
 } from '../utils/api-version';
+import type { MetadataQueryValue } from '../metadata/metadata-query';
+import type { ServiceInfo } from '../service/service';
 import {
   createEntryPoint,
   checkMultipleItems,
@@ -23,8 +25,8 @@ const itemAllowed = (r: string, a: number): boolean =>
     (a > ApiNumber.v1_1_0 && r === 'hierarchicalcodelist'));
 
 const toApiKeywords = (
-  q: any,
-  s: any,
+  q: MetadataQueryValue,
+  s: ServiceInfo,
   value: string,
   isVersion = false,
 ): string => {
@@ -43,7 +45,11 @@ const toApiKeywords = (
   return v;
 };
 
-const createMetadataQuery = (q: any, s: any, a: number): string => {
+const createMetadataQuery = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
   let url = createEntryPoint(s);
   if (!(a < ApiNumber.v2_0_0)) {
     url += 'structure/';
@@ -62,8 +68,13 @@ const createMetadataQuery = (q: any, s: any, a: number): string => {
   return url;
 };
 
-const handleMetaPathParams = (q: any, s: any, u: string, a: number): string => {
-  const path = [];
+const handleMetaPathParams = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  u: string,
+  a: number,
+): string => {
+  const path: string[] = [];
   if (q.item !== 'all' && q.item !== '*' && itemAllowed(q.resource, a)) {
     path.push(toApiKeywords(q, s, q.item));
   }
@@ -83,7 +94,7 @@ const handleMetaPathParams = (q: any, s: any, u: string, a: number): string => {
 };
 
 const handleMetaQueryParams = (
-  q: any,
+  q: MetadataQueryValue,
   u: string,
   hd: boolean,
   hr: boolean,
@@ -95,7 +106,11 @@ const handleMetaQueryParams = (
   return u;
 };
 
-const createShortMetadataQuery = (q: any, s: any, a: number): string => {
+const createShortMetadataQuery = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
   let u = createEntryPoint(s);
   if (!(a < ApiNumber.v2_0_0)) {
     u += 'structure/';
@@ -112,7 +127,12 @@ const createShortMetadataQuery = (q: any, s: any, a: number): string => {
   return u;
 };
 
-const checkVersionWithAll = (q: any, s: any, v: string, a: number): void => {
+const checkVersionWithAll = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  v: string,
+  a: number,
+): void => {
   if (a < ApiNumber.v2_0_0) {
     if (!(v === 'latest' || v === 'all' || v.match(VersionNumber))) {
       throw Error(`Semantic versioning not allowed in ${s.api}`);
@@ -120,7 +140,11 @@ const checkVersionWithAll = (q: any, s: any, v: string, a: number): void => {
   }
 };
 
-const checkMultipleVersions = (q: any, s: any, a: number): void => {
+const checkMultipleVersions = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): void => {
   const v = q.version;
   if (v.indexOf('+') > -1) {
     for (const i of v.split('+')) {
@@ -135,7 +159,11 @@ const checkMultipleVersions = (q: any, s: any, a: number): void => {
   }
 };
 
-const checkApiVersion = (q: any, s: any, a: number): void => {
+const checkApiVersion = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): void => {
   checkMultipleItems(q.agency, s, 'agencies', a);
   checkMultipleItems(q.id, s, 'IDs', a);
   checkMultipleItems(q.version, s, 'versions', a);
@@ -143,7 +171,11 @@ const checkApiVersion = (q: any, s: any, a: number): void => {
   checkMultipleVersions(q, s, a);
 };
 
-const checkDetail = (q: any, s: any, a: number): void => {
+const checkDetail = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): void => {
   if (
     a < ApiNumber.v1_3_0 &&
     (q.detail === 'referencepartial' ||
@@ -158,7 +190,11 @@ const checkDetail = (q: any, s: any, a: number): void => {
   }
 };
 
-const checkResource = (q: any, s: any, r: string): void => {
+const checkResource = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  r: string,
+): void => {
   const api = s.api.replace(/\./g, '_');
   if (!(
     ApiResources[api].indexOf(r) > -1 ||
@@ -168,7 +204,11 @@ const checkResource = (q: any, s: any, r: string): void => {
   }
 };
 
-const checkResources = (q: any, s: any, a: number): void => {
+const checkResources = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): void => {
   const r = q.resource;
   if (a < ApiNumber.v2_0_0) {
     checkResource(q, s, r);
@@ -185,12 +225,19 @@ const checkResources = (q: any, s: any, a: number): void => {
   }
 };
 
-const checkReferences = (q: any, s: any, a: number): void => {
+const checkReferences = (
+  q: MetadataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): void => {
   const api = s.api.replace(/\./g, '_');
   if (!(
     (ApiResources[api].indexOf(q.references) > -1 ||
-      Object.values(MetadataReferencesSpecial).indexOf(q.references) > -1) &&
-    MetadataReferencesExcluded.indexOf(q.references) === -1
+      (Object.values(MetadataReferencesSpecial) as readonly string[]).indexOf(
+        q.references,
+      ) > -1) &&
+    (MetadataReferencesExcluded as readonly string[]).indexOf(q.references) ===
+      -1
   )) {
     throw Error(`${q.references} not allowed as reference in ${s.api}`);
   }
@@ -201,7 +248,7 @@ const checkReferences = (q: any, s: any, a: number): void => {
 };
 
 class Handler {
-  handle(q: any, s: any, skip?: boolean): string {
+  handle(q: MetadataQueryValue, s: ServiceInfo, skip?: boolean): string {
     const a = ApiNumber[getKeyFromVersion(s.api)];
     checkApiVersion(q, s, a);
     checkDetail(q, s, a);

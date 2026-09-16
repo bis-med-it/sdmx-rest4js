@@ -1,6 +1,6 @@
 // Specifies the mime types of the various SDMX formats for structural
 // metadata.
-const formats = {
+const formats = Object.freeze({
   // The SDMX-ML 2.1 Structure format.
   SDMX_ML_2_1_STRUCTURE: 'application/vnd.sdmx.structure+xml;version=2.1',
 
@@ -15,6 +15,7 @@ const formats = {
 
   // Shortcut for the latest version of SDMX-JSON
   SDMX_JSON: 'application/vnd.sdmx.structure+json;version=2.0.0',
-};
+} as const);
 
-export const MetadataFormat = Object.freeze(formats);
+export const MetadataFormat = formats;
+export type MetadataFormatValue = (typeof formats)[keyof typeof formats];

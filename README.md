@@ -8,10 +8,10 @@ This library allows to create and execute [SDMX REST queries](https://github.com
 
 In a nutshell, you can:
 
-- Create [data](https://github.com/sosna/sdmx-rest4js/wiki/Data-queries), [metadata](https://github.com/sosna/sdmx-rest4js/wiki/Metadata-queries), [availability](https://github.com/sosna/sdmx-rest4js/wiki/Other-queries) and [schema](https://github.com/sosna/sdmx-rest4js.wiki.git) queries;
-- Access various [SDMX web services](https://github.com/sosna/sdmx-rest4js/wiki/Services), with the `getService` function;
-- [Execute a query](https://github.com/sosna/sdmx-rest4js/wiki/Running-queries) against a web service, with the `request` function;
-- Translate queries into [URLs](https://github.com/sosna/sdmx-rest4js/wiki/URLs), with the `getUrl` function. This is handy, in case you want to execute the query using, say, jQuery;
+- Create [data](/docs/data%20queries.md), [metadata](/docs/metadata%20queries.md), [availability](/docs/README.md) and [schema](/docs/README.md) queries;
+- Access various [SDMX web services](/docs/services.md), with the `getService` function;
+- [Execute a query](/docs/running%20queries.md) against a web service, with the `request` function;
+- Translate queries into [URLs](/docs/url's.md), with the `getUrl` function. This is handy, in case you want to execute the query using, say, jQuery;
 
 The example below shows how to execute a query against the ECB service, with the `request` function.
 
@@ -28,4 +28,4 @@ sdmxrest.request(query, 'ECB') // ECB is one of the predefined services
 
 This library is compliant with both SDMX 2.1 and SDMX 3.0.
 
-For more information and examples, check the [Wiki](https://github.com/sosna/sdmx-rest4js/wiki).
+For more information and examples, check the [Wiki](/docs/README.md).

@@ -43,7 +43,7 @@ describe('SDMX 3.0 availability queries', () => {
   });
 
   it('throws an exception if the input is not as expected', () => {
-    const test = () => AvailabilityQuery2.from({ test: 'test' });
+    const test = () => AvailabilityQuery2.from({ test: 'test' } as any);
     should.Throw(test, Error, 'Not a valid availability query');
   });
 
@@ -259,7 +259,7 @@ describe('SDMX 3.0 availability queries', () => {
         AvailabilityQuery2.from({
           context: 'dataflow=BIS:CBS(1.0)',
           mode: 'test',
-        });
+        } as any);
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });
@@ -279,7 +279,7 @@ describe('SDMX 3.0 availability queries', () => {
         AvailabilityQuery2.from({
           context: 'dataflow=BIS:CBS(1.0)',
           references: 'ref',
-        });
+        } as any);
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });

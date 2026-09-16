@@ -15,27 +15,112 @@ import { SchemaQuery } from './schema/schema-query';
 import { SchemaContext } from './schema/schema-context';
 import { SchemaFormat } from './schema/schema-format';
 import { Service, services } from './service/service';
+import type { ServiceInput, ServiceValue } from './service/service';
+import type { DataQueryInput, DataQueryValue } from './data/data-query';
+import type { DataQuery2Input, DataQuery2Value } from './data/data-query2';
+import type {
+  MetadataQueryInput,
+  MetadataQueryValue,
+} from './metadata/metadata-query';
+import type {
+  AvailabilityQueryInput,
+  AvailabilityQueryValue,
+} from './avail/availability-query';
+import type {
+  AvailabilityQuery2Input,
+  AvailabilityQuery2Value,
+} from './avail/availability-query2';
+import type { SchemaQueryInput, SchemaQueryValue } from './schema/schema-query';
 import { UrlGenerator } from './utils/url-generator';
 import { ApiVersion, ApiResources } from './utils/api-version';
 import * as SdmxPatterns from './utils/sdmx-patterns';
-import { polyfill } from 'es6-promise';
 
-polyfill();
-const fetch = require('isomorphic-fetch');
+interface ResponseLike {
+  status: number;
+  headers: {
+    get(name: string): string | null;
+  };
+  text(): Promise<string>;
+}
 
-const userAgent = 'sdmx-rest4js (https://github.com/sosna/sdmx-rest4js)';
+const getFetch = (): typeof globalThis.fetch => {
+  const fetch = globalThis.fetch;
+  if (typeof fetch !== 'function') {
+    throw ReferenceError('Global fetch is not available');
+  }
+  return fetch.bind(globalThis);
+};
 
-const checkStatus = (query: any, response: any): void => {
-  if (!response) {
+type HeaderType = 'data' | 'structure' | 'schema';
+type HeaderService = Partial<ServiceValue>;
+
+interface RequestOptions {
+  headers?: Record<string, string>;
+  [key: string]: unknown;
+}
+
+type ApiQueryValue =
+  | DataQueryValue
+  | DataQuery2Value
+  | MetadataQueryValue
+  | AvailabilityQueryValue
+  | AvailabilityQuery2Value
+  | SchemaQueryValue;
+
+type ApiQueryInput =
+  | DataQueryInput
+  | DataQuery2Input
+  | MetadataQueryInput
+  | AvailabilityQueryInput
+  | AvailabilityQuery2Input
+  | SchemaQueryInput;
+
+type ServiceReference = string | ServiceInput | ServiceValue;
+
+type RequestByUrlArgs = readonly [url: string, opts?: RequestOptions];
+type RequestByQueryArgs = readonly [
+  query: ApiQueryInput,
+  service: ServiceReference,
+  opts?: RequestOptions,
+];
+type RequestArgs = RequestByUrlArgs | RequestByQueryArgs;
+
+const hasProp = <K extends PropertyKey>(
+  value: unknown,
+  key: K,
+): value is Record<K, unknown> =>
+  typeof value === 'object' && value != null && key in value;
+
+const isResponseLike = (input: unknown): input is ResponseLike =>
+  hasProp(input, 'status') &&
+  typeof input.status === 'number' &&
+  hasProp(input, 'headers') &&
+  hasProp(input.headers, 'get') &&
+  typeof input.headers.get === 'function' &&
+  hasProp(input, 'text') &&
+  typeof input.text === 'function';
+
+const isPlainObject = (input: unknown): input is Record<string, unknown> =>
+  input instanceof Object &&
+  Object.prototype.toString.call(input) === '[object Object]';
+
+const userAgent = 'sdmx-rest4js (https://github.com/bis-med-it/sdmx-rest4js)';
+
+const checkStatus = (query: unknown, response: unknown): void => {
+  if (!isResponseLike(response)) {
     throw ReferenceError('Not a valid response');
   }
+  const updatedAfter = hasProp(query, 'updatedAfter') && query.updatedAfter;
   const code = response.status;
-  if (!((100 <= code && code < 400) || (code === 404 && query.updatedAfter))) {
+  if (!((100 <= code && code < 400) || (code === 404 && updatedAfter))) {
     throw RangeError(`Request failed with error code ${code}`);
   }
 };
 
-const isFormat = (input: any, expected: { [key: string]: string }): boolean => {
+const isFormat = (
+  input: string,
+  expected: Readonly<Record<string, string>>,
+): boolean => {
   let out = false;
   for (const v of Object.values(expected)) {
     if (v === input) {
@@ -45,14 +130,15 @@ const isFormat = (input: any, expected: { [key: string]: string }): boolean => {
   return out;
 };
 
-const isDataFormat = (format: any): boolean => isFormat(format, DataFormat);
+const isDataFormat = (format: string): boolean => isFormat(format, DataFormat);
 
-const isMetadataFormat = (format: any): boolean =>
+const isMetadataFormat = (format: string): boolean =>
   isFormat(format, MetadataFormat);
 
-const isSchemaFormat = (format: any): boolean => isFormat(format, SchemaFormat);
+const isSchemaFormat = (format: string): boolean =>
+  isFormat(format, SchemaFormat);
 
-const isGenericFormat = (format: any): boolean => {
+const isGenericFormat = (format: string): boolean => {
   const formats = [
     'application/xml',
     'application/json',
@@ -65,40 +151,55 @@ const isGenericFormat = (format: any): boolean => {
 const isRequestedFormat = (requested: string, received: string): boolean =>
   requested.indexOf(received) > -1;
 
-const checkMediaType = (requested: string, response: any): void => {
-  let fmt = response.headers.get('content-type');
+const checkMediaType = (requested: string, response: unknown): void => {
+  if (!isResponseLike(response)) {
+    throw ReferenceError('Not a valid response');
+  }
+  let fmt = response.headers.get('content-type') as string | null;
   fmt = fmt ? fmt.replace(/; version=/, ';version=') : fmt;
-  if (!(
-    isDataFormat(fmt) ||
-    isMetadataFormat(fmt) ||
-    isGenericFormat(fmt) ||
-    isSchemaFormat(fmt)
-  )) {
+  const validFormat =
+    !!fmt &&
+    (isDataFormat(fmt) ||
+      isMetadataFormat(fmt) ||
+      isGenericFormat(fmt) ||
+      isSchemaFormat(fmt));
+  if (!validFormat) {
     throw RangeError(`Not an SDMX format: ${fmt}`);
   }
-  if (!isRequestedFormat(requested, fmt)) {
+  if (!fmt || !isRequestedFormat(requested, fmt)) {
     throw RangeError(`Wrong format: requested ${requested} but got ${fmt}`);
   }
 };
 
-const addHeaders = (opts: any, s: any, type: string): any => {
+const addHeaders = (
+  opts: RequestOptions | undefined,
+  s: HeaderService,
+  type: HeaderType,
+): RequestOptions => {
   if (opts == null) {
     opts = {};
   }
   const headers: { [key: string]: string } = {};
-  for (const key of Object.keys(opts.headers ?? {})) {
-    headers[key.toLowerCase()] = opts.headers[key];
+  const inputHeaders = opts.headers ?? {};
+  for (const key of Object.keys(inputHeaders)) {
+    headers[key.toLowerCase()] = inputHeaders[key];
   }
   if (!headers.accept) {
     switch (type) {
       case 'data':
-        headers.accept = s.format;
+        if (s.format) {
+          headers.accept = s.format;
+        }
         break;
       case 'structure':
-        headers.accept = s.structureFormat;
+        if (s.structureFormat) {
+          headers.accept = s.structureFormat;
+        }
         break;
       case 'schema':
-        headers.accept = s.schemaFormat;
+        if (s.schemaFormat) {
+          headers.accept = s.schemaFormat;
+        }
         break;
     }
   }
@@ -112,14 +213,19 @@ const addHeaders = (opts: any, s: any, type: string): any => {
   return opts;
 };
 
-const guessService = (u: string): any => {
-  const s = [];
-  for (const k of Object.keys(Service)) {
-    if (u.indexOf((Service as any)[k].url) > -1) {
-      s.push((Service as any)[k]);
+const guessService = (u: string): HeaderService => {
+  const values: HeaderService[] = [];
+  for (const k of Object.keys(Service) as Array<keyof typeof Service>) {
+    const candidate = Service[k] as unknown;
+    if (
+      hasProp(candidate, 'url') &&
+      typeof candidate.url === 'string' &&
+      u.indexOf(candidate.url) > -1
+    ) {
+      values.push(candidate as HeaderService);
     }
   }
-  return s[0] ?? {};
+  return values[0] ?? {};
 };
 
 //
@@ -152,23 +258,31 @@ const guessService = (u: string): any => {
 // predefined service or b) an object is supplied and it does not contain a
 // valid *url* property.
 //
-const getService = (input: any): any => {
+function getService(input: string): ServiceValue;
+function getService(input: ServiceInput): ServiceValue;
+function getService(input: ServiceReference): ServiceValue;
+function getService(input: unknown): ServiceValue {
+  const serviceMap = Service as unknown as Record<string, unknown>;
+
   if (typeof input === 'string') {
-    if (!(Service as any)[input]) {
+    const candidate = serviceMap[input];
+    if (
+      !candidate ||
+      typeof candidate !== 'object' ||
+      !hasProp(candidate, 'url') ||
+      typeof candidate.url !== 'string'
+    ) {
       throw ReferenceError(
         `${input} is not in the list of predefined services`,
       );
     }
-    return (Service as any)[input];
-  } else if (
-    input instanceof Object &&
-    Object.prototype.toString.call(input) === '[object Object]'
-  ) {
-    return Service.from(input);
+    return candidate as ServiceValue;
+  } else if (isPlainObject(input)) {
+    return Service.from(input as ServiceInput);
   } else {
     throw TypeError(`Invalid type of ${input}. Expected an object or a string`);
   }
-};
+}
 
 //
 // Get an SDMX 2.1 RESTful data query.
@@ -215,7 +329,10 @@ const getService = (input: any): any => {
 // not compliant with the SDMX 2.1 RESTful specification is supplied for one of
 // the properties.
 //
-const getDataQuery = (input: any): any => DataQuery.from(input);
+function getDataQuery(input: DataQueryInput): DataQueryValue;
+function getDataQuery(input: unknown): DataQueryValue {
+  return DataQuery.from(input as DataQueryInput);
+}
 
 //
 // Get an SDMX 3.0 RESTful data query.
@@ -262,7 +379,10 @@ const getDataQuery = (input: any): any => DataQuery.from(input);
 // not compliant with the SDMX 2.1 RESTful specification is supplied for one of
 // the properties.
 //
-const getDataQuery2 = (input: any): any => DataQuery2.from(input);
+function getDataQuery2(input: DataQuery2Input): DataQuery2Value;
+function getDataQuery2(input: unknown): DataQuery2Value {
+  return DataQuery2.from(input as DataQuery2Input);
+}
 
 //
 // Get an SDMX 2.1 RESTful metadata query.
@@ -295,7 +415,10 @@ const getDataQuery2 = (input: any): any => DataQuery2.from(input);
 // b) a value not compliant with the SDMX 2.1 RESTful specification is supplied
 // for one of the properties.
 //
-const getMetadataQuery = (input: any): any => MetadataQuery.from(input);
+function getMetadataQuery(input: MetadataQueryInput): MetadataQueryValue;
+function getMetadataQuery(input: unknown): MetadataQueryValue {
+  return MetadataQuery.from(input as MetadataQueryInput);
+}
 
 //
 // Get an SDMX 2.1 RESTful availability query.
@@ -323,7 +446,12 @@ const getMetadataQuery = (input: any): any => MetadataQuery.from(input);
 // not compliant with the SDMX 2.1 RESTful specification is supplied for one of
 // the properties.
 //
-const getAvailabilityQuery = (input: any): any => AvailabilityQuery.from(input);
+function getAvailabilityQuery(
+  input: AvailabilityQueryInput,
+): AvailabilityQueryValue;
+function getAvailabilityQuery(input: unknown): AvailabilityQueryValue {
+  return AvailabilityQuery.from(input as AvailabilityQueryInput);
+}
 
 //
 // Get an SDMX 3.0 RESTful availability query.
@@ -349,8 +477,12 @@ const getAvailabilityQuery = (input: any): any => AvailabilityQuery.from(input);
 // not compliant with the SDMX 2.1 RESTful specification is supplied for one of
 // the properties.
 //
-const getAvailabilityQuery2 = (input: any): any =>
-  AvailabilityQuery2.from(input);
+function getAvailabilityQuery2(
+  input: AvailabilityQuery2Input,
+): AvailabilityQuery2Value;
+function getAvailabilityQuery2(input: unknown): AvailabilityQuery2Value {
+  return AvailabilityQuery2.from(input as AvailabilityQuery2Input);
+}
 
 //
 // Get an SDMX 2.1 RESTful schema query.
@@ -377,7 +509,10 @@ const getAvailabilityQuery2 = (input: any): any =>
 // b) a value not compliant with the SDMX 2.1 RESTful specification is supplied
 // for one of the properties.
 //
-const getSchemaQuery = (input: any): any => SchemaQuery.from(input);
+function getSchemaQuery(input: SchemaQueryInput): SchemaQueryValue;
+function getSchemaQuery(input: unknown): SchemaQueryValue {
+  return SchemaQuery.from(input as SchemaQueryInput);
+}
 
 //
 // Get the SDMX 2.1 RESTful URL representing the query to be executed against
@@ -397,7 +532,8 @@ const getSchemaQuery = (input: any): any => SchemaQuery.from(input);
 // @see #getMetadataQuery
 // @see #getService
 //
-const getUrl = (query: any, service: any): string => {
+function getUrl(query: ApiQueryInput, service: ServiceReference): string;
+function getUrl(query: unknown, service: unknown): string {
   if (!service) {
     throw ReferenceError('Not a valid service');
   }
@@ -405,42 +541,72 @@ const getUrl = (query: any, service: any): string => {
     throw ReferenceError('Not a valid query');
   }
   const s = getService(service);
-  let q;
-  if (query.resource != null) {
-    q = getMetadataQuery(query);
-  } else if (query.context != null && query.agency != null) {
-    q = getSchemaQuery(query);
+  let q: ApiQueryValue | undefined;
+  if (hasProp(query, 'resource') && query.resource != null) {
+    q = getMetadataQuery(query as MetadataQueryInput);
   } else if (
+    hasProp(query, 'context') &&
+    query.context != null &&
+    hasProp(query, 'agency') &&
+    query.agency != null
+  ) {
+    q = getSchemaQuery(query as SchemaQueryInput);
+  } else if (
+    hasProp(query, 'flow') &&
     query.flow != null &&
-    (query.references != null || query.component != null || query.mode != null)
+    ((hasProp(query, 'references') && query.references != null) ||
+      (hasProp(query, 'component') && query.component != null) ||
+      (hasProp(query, 'mode') && query.mode != null))
   ) {
-    q = getAvailabilityQuery(query);
+    q = getAvailabilityQuery(query as AvailabilityQueryInput);
   } else if (
-    query.references != null ||
-    query.component != null ||
-    query.mode != null
+    (hasProp(query, 'references') && query.references != null) ||
+    (hasProp(query, 'component') && query.component != null) ||
+    (hasProp(query, 'mode') && query.mode != null)
   ) {
-    q = getAvailabilityQuery2(query);
-  } else if (query.flow != null) {
-    q = getDataQuery(query);
+    q = getAvailabilityQuery2(query as AvailabilityQuery2Input);
+  } else if (hasProp(query, 'flow') && query.flow != null) {
+    q = getDataQuery(query as DataQueryInput);
   } else if (
-    query.context != null ||
-    query.key != null ||
-    query.filters != null ||
-    query.firstNObs != null ||
-    query.lastNObs != null ||
-    query.obsDimension != null ||
-    query.history != null ||
-    query.attributes != null ||
-    query.measures != null ||
-    query.updatedAfter != null
+    (hasProp(query, 'context') && query.context != null) ||
+    (hasProp(query, 'key') && query.key != null) ||
+    (hasProp(query, 'filters') && query.filters != null) ||
+    (hasProp(query, 'firstNObs') && query.firstNObs != null) ||
+    (hasProp(query, 'lastNObs') && query.lastNObs != null) ||
+    (hasProp(query, 'obsDimension') && query.obsDimension != null) ||
+    (hasProp(query, 'history') && query.history != null) ||
+    (hasProp(query, 'attributes') && query.attributes != null) ||
+    (hasProp(query, 'measures') && query.measures != null) ||
+    (hasProp(query, 'updatedAfter') && query.updatedAfter != null)
   ) {
-    q = getDataQuery2(query);
+    q = getDataQuery2(query as DataQuery2Input);
   }
   if (!q) {
     throw Error('Not a valid query');
   }
   return new UrlGenerator().getUrl(q, s);
+}
+
+const isRequestByUrlArgs = (params: RequestArgs): params is RequestByUrlArgs =>
+  typeof params[0] === 'string';
+
+const request2Internal = (...params: RequestArgs): Promise<ResponseLike> => {
+  const s = isRequestByUrlArgs(params)
+    ? guessService(params[0])
+    : getService(params[1]);
+  const u = isRequestByUrlArgs(params) ? params[0] : getUrl(params[0], s);
+  const o = isRequestByUrlArgs(params) ? params[1] : params[2];
+  const t =
+    u.indexOf('/data/') > -1
+      ? 'data'
+      : u.indexOf('/schema/') > -1
+        ? 'schema'
+        : 'structure';
+
+  const requestOptions = addHeaders(o, s, t);
+  return getFetch()(u, requestOptions as RequestInit).then(
+    (response: ResponseLike) => response,
+  );
 };
 
 //
@@ -452,21 +618,15 @@ const getUrl = (query: any, service: any): string => {
 //
 // @see #request for additional information about the required parameters.
 //
-const request2 = (...params: any[]): Promise<any> => {
-  const q = params[0];
-  const s = typeof q === 'string' ? guessService(q) : getService(params[1]);
-  const u = typeof q === 'string' ? q : getUrl(q, s);
-  const o = typeof q === 'string' ? params[1] : params[2];
-  const t =
-    u.indexOf('/data/') > -1
-      ? 'data'
-      : u.indexOf('/schema/') > -1
-        ? 'schema'
-        : 'structure';
-
-  const requestOptions = addHeaders(o, s, t);
-  return fetch(u, requestOptions).then((response: any) => response);
-};
+function request2(url: string, opts?: RequestOptions): Promise<ResponseLike>;
+function request2(
+  query: ApiQueryInput,
+  service: ServiceReference,
+  opts?: RequestOptions,
+): Promise<ResponseLike>;
+function request2(...params: RequestArgs): Promise<ResponseLike> {
+  return request2Internal(...params);
+}
 
 //
 // Executes the supplied query against the supplied service and returns a
@@ -515,11 +675,18 @@ const request2 = (...params: any[]): Promise<any> => {
 // @see #getMetadataQuery
 // @see #getService
 //
-const request = (...params: any[]): Promise<any> =>
-  request2(...params).then((response: any) => {
+function request(url: string, opts?: RequestOptions): Promise<string>;
+function request(
+  query: ApiQueryInput,
+  service: ServiceReference,
+  opts?: RequestOptions,
+): Promise<string>;
+function request(...params: RequestArgs): Promise<string> {
+  return request2Internal(...params).then((response) => {
     checkStatus(params[0], response);
     return response.text();
   });
+}
 
 const sdmxrest = {
   getService,

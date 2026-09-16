@@ -1,5 +1,5 @@
 // Specifies the mime types of the various SDMX formats for schema queries.
-const formats = {
+const formats = Object.freeze({
   // The SDMX-ML 2.1 Structure format.
   SDMX_ML_2_1_STRUCTURE: 'application/vnd.sdmx.structure+xml;version=2.1',
 
@@ -29,6 +29,7 @@ const formats = {
 
   // A generic XML Schema definition
   XML_SCHEMA: 'application/xml',
-};
+} as const);
 
-export const SchemaFormat = Object.freeze(formats);
+export const SchemaFormat = formats;
+export type SchemaFormatValue = (typeof formats)[keyof typeof formats];

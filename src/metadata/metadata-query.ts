@@ -1,6 +1,11 @@
 import { MetadataDetail } from './metadata-detail';
-import { MetadataReferences } from './metadata-references';
+import {
+  MetadataReferences,
+  MetadataReferencesSpecial,
+} from './metadata-references';
 import { MetadataType, isItemScheme } from './metadata-type';
+import type { MetadataDetailValue } from './metadata-detail';
+import type { MetadataReferencesValue } from './metadata-references';
 import {
   AgenciesRefType,
   MultipleIDType,
@@ -14,16 +19,39 @@ import {
   createErrorMessage,
 } from '../utils/validators';
 
-const defaults = {
+export interface MetadataQueryInput {
+  resource?: string | readonly string[];
+  agency?: string | readonly string[];
+  id?: string | readonly string[];
+  version?: string | readonly string[];
+  detail?: MetadataDetailValue;
+  references?: MetadataReferencesValue;
+  item?: string | readonly string[];
+}
+
+export interface MetadataQueryValue {
+  resource: string;
+  agency: string;
+  id: string;
+  version: string;
+  detail: MetadataDetailValue;
+  references: MetadataReferencesValue;
+  item: string;
+}
+
+const defaults: Pick<
+  MetadataQueryValue,
+  'agency' | 'id' | 'version' | 'detail' | 'references' | 'item'
+> = {
   agency: 'all',
   id: 'all',
   version: 'latest',
   detail: MetadataDetail.FULL,
-  references: MetadataReferences.NONE,
+  references: MetadataReferencesSpecial.NONE,
   item: 'all',
 };
 
-const canHaveItem = (query: any, errors: string[]): boolean => {
+const canHaveItem = (query: MetadataQueryValue, errors: string[]): boolean => {
   const allowed = query.item === 'all' || isItemScheme(query.resource);
   if (!allowed) {
     errors.push(
@@ -34,7 +62,16 @@ const canHaveItem = (query: any, errors: string[]): boolean => {
   return allowed;
 };
 
-const ValidQuery: { [key: string]: (q: any, i: any, e: string[]) => any } = {
+type MetadataQueryField = keyof MetadataQueryValue;
+type QueryValidators = {
+  [K in MetadataQueryField]: (
+    query: MetadataQueryValue,
+    input: MetadataQueryValue[K],
+    errors: string[],
+  ) => boolean;
+};
+
+const ValidQuery: QueryValidators = {
   resource: (q, i, e) => isValidMultipleEnum(i, MetadataType, 'resources', e),
   agency: (q, i, e) => isValidPattern(i, AgenciesRefType, 'agencies', e),
   id: (q, i, e) => isValidPattern(i, MultipleIDType, 'resource ids', e),
@@ -45,36 +82,58 @@ const ValidQuery: { [key: string]: (q: any, i: any, e: string[]) => any } = {
     isValidPattern(i, MultipleNestedIDType, 'items', e) && canHaveItem(q, e),
 };
 
-const isValidQuery = (query: any): { isValid: any; errors: string[] } => {
+const isValidQuery = (
+  query: MetadataQueryValue,
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  let isValid: any = false;
-  for (const k of Object.keys(query)) {
-    isValid = ValidQuery[k](query, query[k], errors);
-    if (!isValid) break;
+  const checks = [
+    () => ValidQuery.resource(query, query.resource, errors),
+    () => ValidQuery.agency(query, query.agency, errors),
+    () => ValidQuery.id(query, query.id, errors),
+    () => ValidQuery.version(query, query.version, errors),
+    () => ValidQuery.detail(query, query.detail, errors),
+    () => ValidQuery.references(query, query.references, errors),
+    () => ValidQuery.item(query, query.item, errors),
+  ];
+
+  for (const check of checks) {
+    const isValid = check();
+    if (!isValid) {
+      return { isValid: false, errors };
+    }
   }
-  return { isValid, errors };
+
+  return { isValid: true, errors };
 };
 
-const toQueryParam = (p: any[]): string => p.join('+');
+const toQueryParam = (p: readonly string[]): string => p.join('+');
 
 // A query for structural metadata, as defined by the SDMX RESTful API.
-class MetadataQuery {
-  static from(opts: any): any {
-    let a = opts?.agency ?? defaults.agency;
-    if (Array.isArray(a)) a = toQueryParam(a);
-    let id = opts?.id ?? defaults.id;
-    if (Array.isArray(id)) id = toQueryParam(id);
-    let vs = opts?.version ?? defaults.version;
-    if (Array.isArray(vs)) vs = toQueryParam(vs);
-    let rs = opts?.resource;
-    if (Array.isArray(rs)) rs = toQueryParam(rs);
-    let item = opts?.item ?? defaults.item;
-    if (Array.isArray(item)) item = toQueryParam(item);
-    const query = {
-      resource: rs,
-      agency: a,
+class MetadataQueryBuilder {
+  static from(opts?: MetadataQueryInput | null): MetadataQueryValue {
+    const agencyInput = opts?.agency ?? defaults.agency;
+    const agency =
+      typeof agencyInput === 'string' ? agencyInput : toQueryParam(agencyInput);
+    const idInput = opts?.id ?? defaults.id;
+    const id = typeof idInput === 'string' ? idInput : toQueryParam(idInput);
+    const versionInput = opts?.version ?? defaults.version;
+    const version =
+      typeof versionInput === 'string'
+        ? versionInput
+        : toQueryParam(versionInput);
+    const resourceInput = opts?.resource ?? '';
+    const resource =
+      typeof resourceInput === 'string'
+        ? resourceInput
+        : toQueryParam(resourceInput);
+    const itemInput = opts?.item ?? defaults.item;
+    const item =
+      typeof itemInput === 'string' ? itemInput : toQueryParam(itemInput);
+    const query: MetadataQueryValue = {
+      resource,
+      agency,
       id,
-      version: vs,
+      version,
       detail: opts?.detail ?? defaults.detail,
       references: opts?.references ?? defaults.references,
       item,
@@ -87,4 +146,4 @@ class MetadataQuery {
   }
 }
 
-export { MetadataQuery };
+export { MetadataQueryBuilder as MetadataQuery };

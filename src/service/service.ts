@@ -1,22 +1,50 @@
 import { ApiVersion } from '../utils/api-version';
 import { isValidEnum, createErrorMessage } from '../utils/validators';
 import { DataFormat } from '../data/data-format';
+import type { DataFormatValue } from '../data/data-format';
 import { MetadataFormat } from '../metadata/metadata-format';
+import type { MetadataFormatValue } from '../metadata/metadata-format';
 import { SchemaFormat } from '../schema/schema-format';
+import type { SchemaFormatValue } from '../schema/schema-format';
 
-const defaults = {
+export interface ServiceInfo {
+  api: string;
+  url: string;
+}
+
+export interface ServiceValue extends ServiceInfo {
+  id?: string;
+  name?: string;
+  format?: DataFormatValue;
+  structureFormat?: MetadataFormatValue;
+  schemaFormat?: SchemaFormatValue;
+}
+
+export interface ServiceInput {
+  id?: string;
+  name?: string;
+  url?: string;
+  api?: string;
+  format?: DataFormatValue;
+  structureFormat?: MetadataFormatValue;
+  schemaFormat?: SchemaFormatValue;
+}
+
+const defaults: Pick<ServiceValue, 'api'> = {
   api: ApiVersion.LATEST,
 };
 
-const isValidUrl = (url: any, errors: string[]): any => {
-  const valid = url;
+const isValidUrl = (url: string, errors: string[]): boolean => {
+  const valid = !!url;
   if (!valid) {
     errors.push(`${url} is not in a valid url`);
   }
   return valid;
 };
 
-const isValidService = (q: any): { isValid: any; errors: string[] } => {
+const isValidService = (
+  q: ServiceValue,
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
   const isValid =
     isValidUrl(q.url, errors) &&
@@ -24,11 +52,8 @@ const isValidService = (q: any): { isValid: any; errors: string[] } => {
   return { isValid, errors };
 };
 
-const createSecureInstance = (service: any): any => {
-  const secure: any = {};
-  for (const key of Object.keys(service)) {
-    secure[key] = service[key];
-  }
+const createSecureInstance = (service: ServiceValue): ServiceValue => {
+  const secure: ServiceValue = { ...service };
   secure.url = secure.url.replace('http', 'https');
   return secure;
 };
@@ -66,8 +91,9 @@ class Service {
   static SDMXGR = {
     id: 'SDMXGR',
     name: 'SDMX Global Registry',
-    api: ApiVersion.v1_1_0,
-    url: 'http://registry.sdmx.org/FusionRegistry/ws/rest',
+    api: ApiVersion.v2_0_0,
+    url: 'https://registry.sdmx.org/sdmx/v2',
+    structureFormat: MetadataFormat.SDMX_JSON_2_0_0,
   };
 
   static EUROSTAT = {
@@ -97,11 +123,11 @@ class Service {
 
   static OECD_S = createSecureInstance(Service.OECD);
 
-  static from(opts: any): any {
-    const service = {
+  static from(opts?: ServiceInput | null): ServiceValue {
+    const service: ServiceValue = {
       id: opts?.id,
       name: opts?.name,
-      url: opts?.url,
+      url: opts?.url ?? '',
       api: opts?.api ?? defaults.api,
       format: opts?.format,
       structureFormat: opts?.structureFormat,

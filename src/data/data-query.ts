@@ -1,4 +1,5 @@
 import { DataDetail } from './data-detail';
+import type { DataDetailValue } from './data-detail';
 import {
   FlowRefType,
   SeriesKeyType,
@@ -13,14 +14,47 @@ import {
   createErrorMessage,
 } from '../utils/validators';
 
-const defaults = {
+type KeyDimensionValue = string | readonly string[] | null | undefined;
+
+export interface DataQueryInput {
+  flow?: string;
+  key?: string | readonly KeyDimensionValue[];
+  provider?: string | readonly string[];
+  start?: string;
+  end?: string;
+  updatedAfter?: string;
+  firstNObs?: number;
+  lastNObs?: number;
+  obsDimension?: string;
+  detail?: DataDetailValue;
+  history?: boolean;
+}
+
+export interface DataQueryValue {
+  flow: string;
+  key: string;
+  provider: string;
+  start?: string;
+  end?: string;
+  updatedAfter?: string;
+  firstNObs?: number;
+  lastNObs?: number;
+  obsDimension?: string;
+  detail: DataDetailValue;
+  history: boolean;
+}
+
+const defaults: Pick<
+  DataQueryValue,
+  'key' | 'provider' | 'detail' | 'history'
+> = {
   key: 'all',
   provider: 'all',
   detail: DataDetail.FULL,
   history: false,
 };
 
-const isValidHistory = (input: any, errors: string[]): boolean => {
+const isValidHistory = (input: boolean, errors: string[]): boolean => {
   const valid = typeof input === 'boolean';
   if (!valid) {
     errors.push(
@@ -30,7 +64,11 @@ const isValidHistory = (input: any, errors: string[]): boolean => {
   return valid;
 };
 
-const isValidNObs = (input: any, name: string, errors: string[]): boolean => {
+const isValidNObs = (
+  input: number,
+  name: string,
+  errors: string[],
+): boolean => {
   const valid = typeof input === 'number' && input > 0;
   if (!valid) {
     errors.push(
@@ -40,7 +78,15 @@ const isValidNObs = (input: any, name: string, errors: string[]): boolean => {
   return valid;
 };
 
-const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
+type DataQueryField = keyof DataQueryValue;
+type QueryValidators = {
+  [K in DataQueryField]: (
+    input: DataQueryValue[K],
+    errors: string[],
+  ) => boolean;
+};
+
+const ValidQuery: QueryValidators = {
   flow: (i, e) => isValidPattern(i, FlowRefType, 'flows', e),
   key: (i, e) => isValidPattern(i, SeriesKeyType, 'series key', e),
   provider: (i, e) => isValidPattern(i, MultipleProviderRefType, 'provider', e),
@@ -55,32 +101,54 @@ const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
   history: (i, e) => isValidHistory(i, e),
 };
 
-const isValidQuery = (q: any): { isValid: any; errors: string[] } => {
+const isValidQuery = (
+  q: DataQueryValue,
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  let isValid: any = false;
-  for (const k of Object.keys(q)) {
-    isValid = ValidQuery[k](q[k], errors);
-    if (!isValid) break;
+  const checks = [
+    () => ValidQuery.flow(q.flow, errors),
+    () => ValidQuery.key(q.key, errors),
+    () => ValidQuery.provider(q.provider, errors),
+    () => ValidQuery.start(q.start, errors),
+    () => ValidQuery.end(q.end, errors),
+    () => ValidQuery.updatedAfter(q.updatedAfter, errors),
+    () => ValidQuery.firstNObs(q.firstNObs, errors),
+    () => ValidQuery.lastNObs(q.lastNObs, errors),
+    () => ValidQuery.obsDimension(q.obsDimension, errors),
+    () => ValidQuery.detail(q.detail, errors),
+    () => ValidQuery.history(q.history, errors),
+  ];
+
+  for (const check of checks) {
+    const isValid = check();
+    if (!isValid) {
+      return { isValid: false, errors };
+    }
   }
-  return { isValid, errors };
+
+  return { isValid: true, errors };
 };
 
-const toKeyString = (dims: any[]): string =>
+const toKeyString = (dims: readonly KeyDimensionValue[]): string =>
   dims.map((d) => (Array.isArray(d) ? d.join('+') : (d ?? ''))).join('.');
 
-const toProviderString = (p: any[]): string => p.join('+');
+const toProviderString = (p: readonly string[]): string => p.join('+');
 
 // A query for data, as defined by the SDMX RESTful API.
-class DataQuery {
-  static from(opts: any): any {
-    let key = opts?.key ?? defaults.key;
-    if (Array.isArray(key)) key = toKeyString(key);
-    let pro = opts?.provider ?? defaults.provider;
-    if (Array.isArray(pro)) pro = toProviderString(pro);
-    const query = {
-      flow: opts?.flow,
+class DataQueryBuilder {
+  static from(opts?: DataQueryInput | null): DataQueryValue {
+    const flow = opts?.flow ?? '';
+    const keyInput = opts?.key ?? defaults.key;
+    const key = typeof keyInput === 'string' ? keyInput : toKeyString(keyInput);
+    const providerInput = opts?.provider ?? defaults.provider;
+    const provider =
+      typeof providerInput === 'string'
+        ? providerInput
+        : toProviderString(providerInput);
+    const query: DataQueryValue = {
+      flow,
       key,
-      provider: pro,
+      provider,
       start: opts?.start,
       end: opts?.end,
       updatedAfter: opts?.updatedAfter,
@@ -98,4 +166,4 @@ class DataQuery {
   }
 }
 
-export { DataQuery };
+export { DataQueryBuilder as DataQuery };

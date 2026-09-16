@@ -1,4 +1,6 @@
 import { ApiNumber, getKeyFromVersion } from '../utils/api-version';
+import type { DataQueryValue } from '../data/data-query';
+import type { ServiceInfo } from '../service/service';
 import {
   createEntryPoint,
   validateDataForV2,
@@ -19,7 +21,11 @@ const translateDetail = (detail: string): string => {
   }
 };
 
-const createV1DataUrl = (q: any, s: any, a: number): string => {
+const createV1DataUrl = (
+  q: DataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
   let url = createEntryPoint(s);
   url += `data/${q.flow}/${q.key}/${q.provider}?`;
   if (q.obsDimension) {
@@ -37,7 +43,7 @@ const createV1DataUrl = (q: any, s: any, a: number): string => {
   return url;
 };
 
-const createV2DataUrl = (q: any, s: any): string => {
+const createV2DataUrl = (q: DataQueryValue, s: ServiceInfo): string => {
   validateDataForV2(q, s);
   let url = createEntryPoint(s);
   const fc = parseFlow(q.flow);
@@ -54,7 +60,11 @@ const createV2DataUrl = (q: any, s: any): string => {
   return url;
 };
 
-const createDataQuery = (q: any, s: any, a: number): string => {
+const createDataQuery = (
+  q: DataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
   if (a < ApiNumber.v2_0_0) {
     return createV1DataUrl(q, s, a);
   } else {
@@ -62,24 +72,28 @@ const createDataQuery = (q: any, s: any, a: number): string => {
   }
 };
 
-const handleDataPathParams = (q: any): string => {
-  const path = [];
+const handleDataPathParams = (q: DataQueryValue): string => {
+  const path: string[] = [];
   if (q.provider !== 'all') path.push(q.provider);
   if (q.key !== 'all' || path.length) path.push(q.key);
   return path.length ? '/' + path.reverse().join('/') : '';
 };
 
-const handleData2PathParams = (q: any): string => {
-  const path = [];
+const handleData2PathParams = (q: DataQueryValue): string => {
+  const path: string[] = [];
   if (q.key !== 'all' || path.length) path.push(q.key);
   return path.length ? '/' + path.reverse().join('/') : '';
 };
 
-const hasHistory = (q: any, s: any, a: number): boolean =>
+const hasHistory = (q: DataQueryValue, s: ServiceInfo, a: number): boolean =>
   a >= ApiNumber.v1_1_0 && q.history ? true : false;
 
-const handleDataQueryParams = (q: any, s: any, a: number): string => {
-  const p = [];
+const handleDataQueryParams = (
+  q: DataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
+  const p: string[] = [];
   if (q.obsDimension) p.push(`dimensionAtObservation=${q.obsDimension}`);
   if (q.detail !== 'full') p.push(`detail=${q.detail}`);
   if (hasHistory(q, s, a)) p.push(`includeHistory=${q.history}`);
@@ -91,8 +105,12 @@ const handleDataQueryParams = (q: any, s: any, a: number): string => {
   return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
 };
 
-const handleData2QueryParams = (q: any, s: any, a: number): string => {
-  const p = [];
+const handleData2QueryParams = (
+  q: DataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
+  const p: string[] = [];
   if (q.obsDimension) p.push(`dimensionAtObservation=${q.obsDimension}`);
   if (q.detail !== 'full') p.push(`${translateDetail(q.detail)}`);
   if (hasHistory(q, s, a)) p.push(`includeHistory=${q.history}`);
@@ -102,7 +120,11 @@ const handleData2QueryParams = (q: any, s: any, a: number): string => {
   return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
 };
 
-const createShortV1Url = (q: any, s: any, a: number): string => {
+const createShortV1Url = (
+  q: DataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
   let u = createEntryPoint(s);
   u += `data/${q.flow}`;
   u += handleDataPathParams(q);
@@ -110,7 +132,11 @@ const createShortV1Url = (q: any, s: any, a: number): string => {
   return u;
 };
 
-const createShortV2Url = (q: any, s: any, a: number): string => {
+const createShortV2Url = (
+  q: DataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
   validateDataForV2(q, s);
   let u = createEntryPoint(s);
   const fc = parseFlow(q.flow);
@@ -124,7 +150,11 @@ const createShortV2Url = (q: any, s: any, a: number): string => {
   return u;
 };
 
-const createShortDataQuery = (q: any, s: any, a: number): string => {
+const createShortDataQuery = (
+  q: DataQueryValue,
+  s: ServiceInfo,
+  a: number,
+): string => {
   if (a < ApiNumber.v2_0_0) {
     return createShortV1Url(q, s, a);
   } else {
@@ -133,7 +163,7 @@ const createShortDataQuery = (q: any, s: any, a: number): string => {
 };
 
 class Handler {
-  handle(q: any, s: any, skip?: boolean): string {
+  handle(q: DataQueryValue, s: ServiceInfo, skip?: boolean): string {
     const api = ApiNumber[getKeyFromVersion(s.api)];
     checkMultipleItems(q.provider, s, 'providers', api);
     if (skip) {

@@ -1,5 +1,5 @@
 // Specifies the amount of information to be returned for metadata queries.
-const details = {
+const details = Object.freeze({
   // All available information for all artefacts is returned.
   FULL: 'full',
 
@@ -20,6 +20,7 @@ const details = {
 
   // Same as full, except that returned extended codelists are not resolved.
   RAW: 'raw',
-};
+} as const);
 
-export const MetadataDetail = Object.freeze(details);
+export const MetadataDetail = details;
+export type MetadataDetailValue = (typeof details)[keyof typeof details];

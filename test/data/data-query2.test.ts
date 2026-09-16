@@ -50,7 +50,7 @@ describe('SDMX 3.0 data queries', () => {
   });
 
   it('throws an exception if the input is not as expected', () => {
-    const test = () => DataQuery2.from({ test: 'test' });
+    const test = () => DataQuery2.from({ test: 'test' } as any);
     should.Throw(test, Error, 'Not a valid data query');
   });
 
@@ -174,7 +174,7 @@ describe('SDMX 3.0 data queries', () => {
         DataQuery2.from({
           context: 'dataflow=BIS:CBS(1.0)',
           firstNObs: 'test',
-        });
+        } as any);
       should.Throw(test, Error, 'Not a valid data query');
     });
 
@@ -184,7 +184,10 @@ describe('SDMX 3.0 data queries', () => {
       should.Throw(test, Error, 'Not a valid data query');
 
       test = () =>
-        DataQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', lastNObs: 'test' });
+        DataQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          lastNObs: 'test',
+        } as any);
       should.Throw(test, Error, 'Not a valid data query');
     });
   });
@@ -220,7 +223,10 @@ describe('SDMX 3.0 data queries', () => {
 
     it('throws an exception if the value for history is not a boolean', () => {
       const test = () =>
-        DataQuery2.from({ context: 'dataflow=BIS:CBS(1.0)', history: 'test' });
+        DataQuery2.from({
+          context: 'dataflow=BIS:CBS(1.0)',
+          history: 'test',
+        } as any);
       should.Throw(test, Error, 'Not a valid data query');
     });
   });

@@ -1,5 +1,7 @@
 import { AvailabilityMode } from './availability-mode';
 import { AvailabilityReferences } from './availability-references';
+import type { AvailabilityModeValue } from './availability-mode';
+import type { AvailabilityReferencesValue } from './availability-references';
 import {
   FlowRefType,
   SeriesKeyType,
@@ -14,7 +16,36 @@ import {
   createErrorMessage,
 } from '../utils/validators';
 
-const defaults = {
+type KeyDimensionValue = string | readonly string[] | null | undefined;
+
+export interface AvailabilityQueryInput {
+  flow?: string;
+  key?: string | readonly KeyDimensionValue[];
+  provider?: string | readonly string[];
+  component?: string;
+  start?: string;
+  end?: string;
+  updatedAfter?: string;
+  mode?: AvailabilityModeValue;
+  references?: AvailabilityReferencesValue;
+}
+
+export interface AvailabilityQueryValue {
+  flow: string;
+  key: string;
+  provider: string;
+  component: string;
+  start?: string;
+  end?: string;
+  updatedAfter?: string;
+  mode: AvailabilityModeValue;
+  references: AvailabilityReferencesValue;
+}
+
+const defaults: Pick<
+  AvailabilityQueryValue,
+  'key' | 'provider' | 'component' | 'mode' | 'references'
+> = {
   key: 'all',
   provider: 'all',
   component: 'all',
@@ -22,7 +53,15 @@ const defaults = {
   references: AvailabilityReferences.NONE,
 };
 
-const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
+type AvailabilityQueryField = keyof AvailabilityQueryValue;
+type QueryValidators = {
+  [K in AvailabilityQueryField]: (
+    input: AvailabilityQueryValue[K],
+    errors: string[],
+  ) => boolean;
+};
+
+const ValidQuery: QueryValidators = {
   flow: (i, e) => isValidPattern(i, FlowRefType, 'flows', e),
   key: (i, e) => isValidPattern(i, SeriesKeyType, 'series key', e),
   provider: (i, e) => isValidPattern(i, MultipleProviderRefType, 'provider', e),
@@ -34,32 +73,59 @@ const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
   references: (i, e) => isValidEnum(i, AvailabilityReferences, 'references', e),
 };
 
-const isValidQuery = (q: any): { isValid: any; errors: string[] } => {
+const isValidQuery = (
+  q: AvailabilityQueryValue,
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  let isValid: any = false;
-  for (const k of Object.keys(q)) {
-    isValid = ValidQuery[k](q[k], errors);
-    if (!isValid) break;
+  const checks = [
+    () => ValidQuery.flow(q.flow, errors),
+    () => ValidQuery.key(q.key, errors),
+    () => ValidQuery.provider(q.provider, errors),
+    () => ValidQuery.component(q.component, errors),
+    () => ValidQuery.start(q.start, errors),
+    () => ValidQuery.end(q.end, errors),
+    () => ValidQuery.updatedAfter(q.updatedAfter, errors),
+    () => ValidQuery.mode(q.mode, errors),
+    () => ValidQuery.references(q.references, errors),
+  ];
+
+  for (const check of checks) {
+    const isValid = check();
+    if (!isValid) {
+      return { isValid: false, errors };
+    }
   }
-  return { isValid, errors };
+
+  return { isValid: true, errors };
 };
 
-const toKeyString = (dims: any[]): string =>
+const toKeyString = (dims: readonly KeyDimensionValue[]): string =>
   dims.map((d) => (Array.isArray(d) ? d.join('+') : (d ?? ''))).join('.');
 
-const toProviderString = (p: any[]): string => p.join('+');
+const toProviderString = (p: readonly string[]): string => p.join('+');
 
 // A query for data availability, as defined by the SDMX RESTful API.
-class AvailabilityQuery {
-  static from(opts: any): any {
-    let key = opts?.key ?? defaults.key;
-    if (Array.isArray(key)) key = toKeyString(key);
-    let pro = opts?.provider ?? defaults.provider;
-    if (Array.isArray(pro)) pro = toProviderString(pro);
-    const query = {
-      flow: opts?.flow,
+class AvailabilityQueryBuilder {
+  static from(opts?: AvailabilityQueryInput | null): AvailabilityQueryValue {
+    const flow = opts?.flow ?? '';
+    const keyInput = opts?.key ?? defaults.key;
+    let key: string;
+    if (typeof keyInput === 'string') {
+      key = keyInput;
+    } else {
+      key = toKeyString(keyInput);
+    }
+    const providerInput = opts?.provider ?? defaults.provider;
+    let provider: string;
+    if (typeof providerInput === 'string') {
+      provider = providerInput;
+    } else {
+      provider = toProviderString(providerInput);
+    }
+    const query: AvailabilityQueryValue = {
+      flow,
       key,
-      provider: pro,
+      provider,
       component: opts?.component ?? defaults.component,
       start: opts?.start,
       end: opts?.end,
@@ -75,4 +141,4 @@ class AvailabilityQuery {
   }
 }
 
-export { AvailabilityQuery };
+export { AvailabilityQueryBuilder as AvailabilityQuery };

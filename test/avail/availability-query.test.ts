@@ -36,7 +36,8 @@ describe('Availability queries', () => {
   });
 
   it('throws an exception when using an unknown property', () => {
-    const test = () => AvailabilityQuery.from({ flow: 'EXR', type: 'blah' });
+    const test = () =>
+      AvailabilityQuery.from({ flow: 'EXR', type: 'blah' } as any);
   });
 
   describe('when setting the flow', () => {
@@ -245,7 +246,8 @@ describe('Availability queries', () => {
     });
 
     it('throws an exception if the value for mode is unknown', () => {
-      const test = () => AvailabilityQuery.from({ flow: 'EXR', mode: 'test' });
+      const test = () =>
+        AvailabilityQuery.from({ flow: 'EXR', mode: 'test' } as any);
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });
@@ -259,7 +261,7 @@ describe('Availability queries', () => {
 
     it('throws an exception if the value for references is unknown', () => {
       const test = () =>
-        AvailabilityQuery.from({ flow: 'dataflow', references: 'ref' });
+        AvailabilityQuery.from({ flow: 'dataflow', references: 'ref' } as any);
       should.Throw(test, Error, 'Not a valid availability query');
     });
   });

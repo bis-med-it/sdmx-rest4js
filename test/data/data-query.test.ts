@@ -235,7 +235,7 @@ describe('Data queries', () => {
       let test = () => DataQuery.from({ flow: 'EXR', firstNObs: -2 });
       should.Throw(test, Error, 'Not a valid data query');
 
-      test = () => DataQuery.from({ flow: 'EXR', firstNObs: 'test' });
+      test = () => DataQuery.from({ flow: 'EXR', firstNObs: 'test' } as any);
       should.Throw(test, Error, 'Not a valid data query');
     });
 
@@ -243,7 +243,7 @@ describe('Data queries', () => {
       let test = () => DataQuery.from({ flow: 'EXR', lastNObs: -2 });
       should.Throw(test, Error, 'Not a valid data query');
 
-      test = () => DataQuery.from({ flow: 'EXR', lastNObs: 'test' });
+      test = () => DataQuery.from({ flow: 'EXR', lastNObs: 'test' } as any);
       should.Throw(test, Error, 'Not a valid data query');
     });
   });
@@ -274,7 +274,7 @@ describe('Data queries', () => {
     });
 
     it('throws an exception if the value for the level of detail is unknown', () => {
-      const test = () => DataQuery.from({ flow: 'EXR', detail: 'test' });
+      const test = () => DataQuery.from({ flow: 'EXR', detail: 'test' } as any);
       should.Throw(test, Error, 'Not a valid data query');
     });
   });
@@ -288,7 +288,8 @@ describe('Data queries', () => {
     });
 
     it('throws an exception if the value for history is not a boolean', () => {
-      const test = () => DataQuery.from({ flow: 'EXR', history: 'test' });
+      const test = () =>
+        DataQuery.from({ flow: 'EXR', history: 'test' } as any);
       should.Throw(test, Error, 'Not a valid data query');
     });
   });

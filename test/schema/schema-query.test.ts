@@ -39,7 +39,7 @@ describe('Schema query', () => {
 
   describe('when setting a context', () => {
     it('a string representing the context can be passed', () => {
-      let q: any = {
+      let q = {
         context: 'datastructure',
         agency: 'BIS',
         id: 'BIS_CBS',
@@ -63,7 +63,7 @@ describe('Schema query', () => {
         agency: 'BIS',
         id: 'BIS_CBS',
       };
-      const test = () => SchemaQuery.from(q);
+      const test = () => SchemaQuery.from(q as any);
       should.Throw(test, Error, 'Not a valid schema query');
     });
   });
@@ -302,7 +302,7 @@ describe('Schema query', () => {
         version: '1.0',
         explicit: 'test',
       };
-      const test = () => SchemaQuery.from(q);
+      const test = () => SchemaQuery.from(q as any);
       should.Throw(test, Error, 'Not a valid schema query');
     });
   });

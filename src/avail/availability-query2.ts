@@ -1,5 +1,7 @@
 import { AvailabilityMode } from './availability-mode';
 import { AvailabilityReferences } from './availability-references';
+import type { AvailabilityModeValue } from './availability-mode';
+import type { AvailabilityReferencesValue } from './availability-references';
 import {
   ContextRefType,
   Sdmx3SeriesKeyType,
@@ -13,7 +15,30 @@ import {
   createErrorMessage,
 } from '../utils/validators';
 
-const defaults = {
+export interface AvailabilityQuery2Input {
+  context?: string;
+  key?: string;
+  component?: string;
+  updatedAfter?: string;
+  filters?: string | readonly string[];
+  mode?: AvailabilityModeValue;
+  references?: AvailabilityReferencesValue;
+}
+
+export interface AvailabilityQuery2Value {
+  context: string;
+  key: string;
+  component: string;
+  updatedAfter?: string;
+  filters: string[];
+  mode: AvailabilityModeValue;
+  references: AvailabilityReferencesValue;
+}
+
+const defaults: Pick<
+  AvailabilityQuery2Value,
+  'context' | 'key' | 'component' | 'filters' | 'mode' | 'references'
+> = {
   context: '*=*:*(*)',
   key: '*',
   component: '*',
@@ -22,50 +47,46 @@ const defaults = {
   references: AvailabilityReferences.NONE,
 };
 
-const isValidKey = (input: any, name: string, errors: string[]): boolean => {
-  let valid = true;
-  if (input.indexOf(',') > -1) {
-    for (const i of input.split(',')) {
-      const r = isValidPattern(i, Sdmx3SeriesKeyType, name, errors);
-      if (!r) valid = false;
-    }
-  } else {
-    const r = isValidPattern(input, Sdmx3SeriesKeyType, name, errors);
-    if (!r) valid = false;
-  }
-  return valid;
+const isValidKey = (input: string, name: string, errors: string[]): boolean => {
+  const values = input.indexOf(',') > -1 ? input.split(',') : [input];
+  return values
+    .map((value) => isValidPattern(value, Sdmx3SeriesKeyType, name, errors))
+    .every(Boolean);
 };
 
 const isValidFilters = (
-  input: any,
+  input: string[],
   name: string,
   errors: string[],
 ): boolean => {
-  let valid = true;
-  for (const filter of input) {
-    const r = isValidPattern(filter, FiltersType, name, errors);
-    if (!r) valid = false;
-  }
-  return valid;
+  return input
+    .map((filter) => isValidPattern(filter, FiltersType, name, errors))
+    .every(Boolean);
 };
 
-const isValidComp = (input: any, name: string, errors: string[]): boolean => {
-  let valid = true;
+const isValidComp = (
+  input: string,
+  name: string,
+  errors: string[],
+): boolean => {
   if (input !== '*') {
-    if (input.indexOf(',') > -1) {
-      for (const i of input.split(',')) {
-        const r = isValidPattern(i, NestedNCNameIDType, name, errors);
-        if (!r) valid = false;
-      }
-    } else {
-      const r = isValidPattern(input, NestedNCNameIDType, name, errors);
-      if (!r) valid = false;
-    }
+    const values = input.indexOf(',') > -1 ? input.split(',') : [input];
+    return values
+      .map((value) => isValidPattern(value, NestedNCNameIDType, name, errors))
+      .every(Boolean);
   }
-  return valid;
+  return true;
 };
 
-const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
+type AvailabilityQuery2Field = keyof AvailabilityQuery2Value;
+type QueryValidators = {
+  [K in AvailabilityQuery2Field]: (
+    input: AvailabilityQuery2Value[K],
+    errors: string[],
+  ) => boolean;
+};
+
+const ValidQuery: QueryValidators = {
   context: (i, e) => isValidPattern(i, ContextRefType, 'context', e),
   key: (i, e) => isValidKey(i, 'series key', e),
   component: (i, e) => isValidComp(i, 'component', e),
@@ -75,14 +96,28 @@ const ValidQuery: { [key: string]: (i: any, e: string[]) => any } = {
   references: (i, e) => isValidEnum(i, AvailabilityReferences, 'references', e),
 };
 
-const isValidQuery = (q: any): { isValid: any; errors: string[] } => {
+const isValidQuery = (
+  q: AvailabilityQuery2Value,
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  let isValid: any = false;
-  for (const k of Object.keys(q)) {
-    isValid = ValidQuery[k](q[k], errors);
-    if (!isValid) break;
+  const checks = [
+    () => ValidQuery.context(q.context, errors),
+    () => ValidQuery.key(q.key, errors),
+    () => ValidQuery.component(q.component, errors),
+    () => ValidQuery.updatedAfter(q.updatedAfter, errors),
+    () => ValidQuery.filters(q.filters, errors),
+    () => ValidQuery.mode(q.mode, errors),
+    () => ValidQuery.references(q.references, errors),
+  ];
+
+  for (const check of checks) {
+    const isValid = check();
+    if (!isValid) {
+      return { isValid: false, errors };
+    }
   }
-  return { isValid, errors };
+
+  return { isValid: true, errors };
 };
 
 const expected = [
@@ -93,22 +128,24 @@ const expected = [
   'filters',
   'mode',
   'references',
-];
+] as const;
 
-class AvailabilityQuery {
-  static from(opts: any): any {
+class AvailabilityQuery2Builder {
+  static from(opts?: AvailabilityQuery2Input | null): AvailabilityQuery2Value {
     if (opts) {
       for (const k of Object.keys(opts)) {
-        if (expected.indexOf(k) === -1) {
+        if (!expected.includes(k as (typeof expected)[number])) {
           throw Error(createErrorMessage([], 'availability query'));
         }
       }
     }
     const context = opts?.context ?? defaults.context;
     const key = opts?.key ?? defaults.key;
-    let filters = opts?.filters ?? defaults.filters;
-    if (!Array.isArray(filters)) filters = [filters];
-    const query = {
+    const filtersInput = opts?.filters ?? defaults.filters;
+    const filters = Array.isArray(filtersInput)
+      ? [...filtersInput]
+      : [filtersInput];
+    const query: AvailabilityQuery2Value = {
       context,
       key,
       component: opts?.component ?? defaults.component,
@@ -125,4 +162,4 @@ class AvailabilityQuery {
   }
 }
 
-export { AvailabilityQuery as AvailabilityQuery2 };
+export { AvailabilityQuery2Builder as AvailabilityQuery2 };

@@ -1,4 +1,6 @@
 import { ApiNumber, getKeyFromVersion } from '../utils/api-version';
+import type { DataQuery2Value } from '../data/data-query2';
+import type { ServiceInfo } from '../service/service';
 import {
   createEntryPoint,
   validateDataForV2,
@@ -6,7 +8,7 @@ import {
   parseFilter,
 } from '../utils/url-generator-common';
 
-const createDataQuery = (q: any, s: any): string => {
+const createDataQuery = (q: DataQuery2Value, s: ServiceInfo): string => {
   validateDataForV2(q, s);
   let url = createEntryPoint(s);
   const fc = parseContext(q.context);
@@ -30,8 +32,8 @@ const createDataQuery = (q: any, s: any): string => {
   return url;
 };
 
-const handleDataPathParams = (q: any): string => {
-  const p = [];
+const handleDataPathParams = (q: DataQuery2Value): string => {
+  const p: string[] = [];
   const c = parseContext(q.context);
   if (q.key !== '*' || p.length) p.push(q.key);
   if (c[3] !== '*' || p.length) p.push(c[3]);
@@ -41,8 +43,8 @@ const handleDataPathParams = (q: any): string => {
   return p.length ? '/' + p.reverse().join('/') : '';
 };
 
-const handleDataQueryParams = (q: any): string => {
-  const p = [];
+const handleDataQueryParams = (q: DataQuery2Value): string => {
+  const p: string[] = [];
   if (q.filters) {
     for (const filter of q.filters) {
       const f = parseFilter(filter);
@@ -59,7 +61,7 @@ const handleDataQueryParams = (q: any): string => {
   return p.length > 0 ? '?' + p.reduceRight((x, y) => x + '&' + y) : '';
 };
 
-const createShortDataQuery = (q: any, s: any): string => {
+const createShortDataQuery = (q: DataQuery2Value, s: ServiceInfo): string => {
   validateDataForV2(q, s);
   let u = createEntryPoint(s);
   u += 'data';
@@ -69,7 +71,7 @@ const createShortDataQuery = (q: any, s: any): string => {
 };
 
 class Handler {
-  handle(q: any, s: any, skip?: boolean): string {
+  handle(q: DataQuery2Value, s: ServiceInfo, skip?: boolean): string {
     const api = ApiNumber[getKeyFromVersion(s.api)];
     if (api < ApiNumber.v2_0_0) {
       throw Error(`SDMX 3.0 queries not allowed in ${s.api}`);
